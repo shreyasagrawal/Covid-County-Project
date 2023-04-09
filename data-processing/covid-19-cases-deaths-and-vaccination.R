@@ -8,10 +8,10 @@ require(reshape2)
 
 # Master data from New York Times ----
 ## Cases/deaths (counties) by time ----
-us.counties.2020 <- read_csv("~/Desktop/Medicare Dataset Project/COVID-19 Master Datasets from New York Times/us-counties-2020.csv")
-us.counties.2021 <- read_csv("~/Desktop/Medicare Dataset Project/COVID-19 Master Datasets from New York Times/us-counties-2021.csv")
-us.counties.2022 <- read_csv("~/Desktop/Medicare Dataset Project/COVID-19 Master Datasets from New York Times/us-counties-2022.csv")
-us.counties.2023 <- read_csv("~/Desktop/Medicare Dataset Project/COVID-19 Master Datasets from New York Times/us-counties-2023.csv")
+us.counties.2020 <- read_csv("https://www.dropbox.com/s/a6c6m3b3jh5a172/us-counties-2020.csv?dl=1")
+us.counties.2021 <- read_csv("https://www.dropbox.com/s/cnjkrvm6tlwwqup/us-counties-2021.csv?dl=1")
+us.counties.2022 <- read_csv("https://www.dropbox.com/s/74ca13pn9c09kqt/us-counties-2022.csv?dl=1")
+us.counties.2023 <- read_csv("https://www.dropbox.com/s/luff8kr8p2j7g5l/us-counties-2023.csv?dl=1")
 
 ### Combining all datasets above into a master set ----
 us.counties.all <- rbind(us.counties.2020, us.counties.2021, 
@@ -42,7 +42,7 @@ ggplot(counties.monthly,
 
 # COVID Vaccination data from CDC ----
 # https://data.cdc.gov/Vaccinations/COVID-19-Vaccinations-in-the-United-States-County/8xkx-amqh
-us.vaccination <- read_csv("~/Desktop/Medicare Dataset Project/CDC Datasets/COVID-19_Vaccinations_in_the_United_States_County.csv")
+us.vaccination <- read_csv("https://www.dropbox.com/s/87vdc7kjvkqa6ca/COVID-19_Vaccinations_in_the_United_States_County.csv?dl=1")
 
 ## Data processing ----
 colnames(us.vaccination)[1:2] <- c("date", "fips")
@@ -65,18 +65,19 @@ master.us.covid <- master.us.covid[, !colnames(master.us.covid) %in%
 
 head(master.us.covid)
 
-# Vaccine Hesitancy from CDC
-# https://data.cdc.gov/Vaccinations/Vaccine-Hesitancy-for-COVID-19-County-and-local-es/q9mh-h2tw
-vaccine.hesitancy <- read_csv("Desktop/Medicare Dataset Project/CDC Datasets/Vaccine_Hesitancy_for_COVID-19__County_and_local_estimates.csv")
-
-# COVID-associated Hospitalization from CDC
-# https://gis.cdc.gov/grasp/COVIDNet/COVID19_3.html
-
 # Hospital Occupancy data from CDC ----
 # Hospital capacity tracker: https://covid.cdc.gov/covid-data-tracker/#hospital-capacity
 
 ## Reported Patient Impact and Hospital Capacity by Facility ----
 # COVID-19 Reported Patient Impact and Hospital Capacity by Facility: https://healthdata.gov/Hospital/COVID-19-Reported-Patient-Impact-and-Hospital-Capa/anag-cw7u
 # COVID-19 Reported Patient Impact and Hospital Capacity by Facility (data source): https://healthdata.gov/stories/s/nhgk-5gpv
-patientImpact.hospitalCapacity <- read_csv("Desktop/Medicare Dataset Project/CDC Datasets/COVID-19_Reported_Patient_Impact_and_Hospital_Capacity_by_Facility.csv")
+patientImpact.hospitalCapacity <- read_csv("https://www.dropbox.com/s/fgb0ga3o84bfajp/covid-19_reported_patient_impact_and_hospital_capacity_by_facility.csv?dl=1")
 View(patientImpact.hospitalCapacity)
+
+# Other potential data sources ----
+
+## Vaccine Hesitancy from CDC ----
+# https://data.cdc.gov/Vaccinations/Vaccine-Hesitancy-for-COVID-19-County-and-local-es/q9mh-h2tw
+
+## COVID-associated Hospitalization from CDC ----
+# https://gis.cdc.gov/grasp/COVIDNet/COVID19_3.html
