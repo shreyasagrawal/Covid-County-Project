@@ -4,19 +4,12 @@ require(dplyr)
 require(readr)
 require(mosaic)
 require(ggplot2)
-require(reshape2)
+require(reshape2)q
 
-# Data prep
-demographic.2019 <- read.csv("https://github.com/shreyasagrawal/Covid-County-Project/blob/main/data/demographic-and-housing-estimate/demographic-and-housing-estimate-2019.csv?raw=true")
-demographic.2020 <- read.csv("https://github.com/shreyasagrawal/Covid-County-Project/blob/main/data/demographic-and-housing-estimate/demographic-and-housing-estimate-2020.csv?raw=true")
-demographic.2021 <- read.csv("https://github.com/shreyasagrawal/Covid-County-Project/blob/main/data/demographic-and-housing-estimate/demographic-and-housing-estimate-2021.csv?raw=true")
+# Economics characteristics dataset from Census data ----
+econ.2019 <- read.csv("https://www.dropbox.com/s/onf0wf2l0j6tl84/economic-characteristics-2019.csv?dl=1")
+econ.2020 <- read.csv("https://www.dropbox.com/s/te81iz8nmg1q9ks/economic-characteristics-2020.csv?dl=1")
+econ.2021 <- read.csv("https://www.dropbox.com/s/q0iod9xnpjjdpcl/economic-characteristics-2021.csv?dl=1")
 
-# Add YEAR variable for each dataset
-demographic.2019$YEAR <- 2019
-demographic.2020$YEAR <- 2020
-demographic.2021$YEAR <- 2021
-
-# Combine all sets by rows
-demographic.all <- rbind(demographic.2019, 
-                         demographic.2020, 
-                         demographic.2021)
+### Combining all datasets above into a whole data set ----
+econ.all <- rbind(econ.2019, econ.202, econ.2021)
