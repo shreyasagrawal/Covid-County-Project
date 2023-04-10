@@ -15,7 +15,18 @@ View(patientImpact.hospitalCapacity)
 patientImpact.hospitalCapacity$collection_week <- as.Date(patientImpact.hospitalCapacity$collection_week)
 class(patientImpact.hospitalCapacity$collection_week)
 
+# Create week_number column
 week_number <- strftime(patientImpact.hospitalCapacity$collection_week, format = "%V")
 patientImpact.hospitalCapacity <- add_column(patientImpact.hospitalCapacity, 
                                              week_number, .after = 1)
 View(patientImpact.hospitalCapacity)
+
+# Delete excessive variables
+patientImpact.hospitalCapacity <- patientImpact.hospitalCapacity %>% 
+  select(-hospital_pk, -state, -ccn, -hospital_name, -address, -city, -zip, -hospital_subtype, -is_metro_micro)
+View(patientImpact.hospitalCapacity)
+
+patientImpact.hospitalCapacity <- as.data.frame(patientImpact.hospitalCapacity)
+patientImpact.county <- aggregate(patientImpact.hospitalCapacity[, 4:ncol(patientImpact.hospitalCapacity)] ~ 
+                                          fips_code + week_number, 
+                                        na.omit(patientImpact.hospitalCapacity), mean)
