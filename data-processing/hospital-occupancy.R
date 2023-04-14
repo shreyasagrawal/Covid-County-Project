@@ -23,10 +23,12 @@ View(patientImpact.hospitalCapacity)
 
 # Delete excessive variables
 patientImpact.hospitalCapacity <- patientImpact.hospitalCapacity %>% 
-  # select(-hospital_pk, -state, -ccn, -hospital_name, -address, 
-  #        -city, -zip, -hospital_subtype, -is_metro_micro) %>% 
-  select(-all_adult_hospital_beds_7_day_avg)
-patientImpact.hospitalCapacity <- patientImpact.hospitalCapacity[, -c()]
+  select(-hospital_pk, -state, -ccn, -hospital_name, -address,
+         -city, -zip, -hospital_subtype) %>%
+  select(-all_adult_hospital_beds_7_day_avg, -total_adult_patients_hospitalized_confirmed_and_suspected_covid_7_day_avg, 
+         -total_pediatric_patients_hospitalized_confirmed_and_suspected_covid_7_day_avg, 
+         -staffed_icu_adult_patients_confirmed_and_suspected_covid_7_day_avg) %>% 
+  select(-contains("influenza"))
 View(patientImpact.hospitalCapacity)
 
 # patientImpact.hospitalCapacity <- as.data.frame(patientImpact.hospitalCapacity)
@@ -35,5 +37,4 @@ View(patientImpact.hospitalCapacity)
 #                                         na.omit(patientImpact.hospitalCapacity), mean)
 
 patientImpact.hospitalCapacity %>% 
-  group_by(fips_code, week_number) %>% 
-  summarize()
+  group_by(fips_code, week_number) %>%
