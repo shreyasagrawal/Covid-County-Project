@@ -22,14 +22,16 @@ patientImpact.hospitalCapacity <- add_column(patientImpact.hospitalCapacity,
 View(patientImpact.hospitalCapacity)
 
 # Delete excessive variables
-patientImpact.hospitalCapacity <- patientImpact.hospitalCapacity %>% 
-  select(-hospital_pk, -state, -ccn, -hospital_name, -address,
-         -city, -zip, -hospital_subtype) %>%
-  select(-all_adult_hospital_beds_7_day_avg, -total_adult_patients_hospitalized_confirmed_and_suspected_covid_7_day_avg, 
-         -total_pediatric_patients_hospitalized_confirmed_and_suspected_covid_7_day_avg, 
-         -staffed_icu_adult_patients_confirmed_and_suspected_covid_7_day_avg) %>% 
-  select(-contains("influenza"))
-View(patientImpact.hospitalCapacity)
+# edit(patientImpact.hospitalCapacity) # XQuartz viewing table
+organized.capacity <- patientImpact.hospitalCapacity[, !grepl("influenza|pediatric|suspected|admission|vaccinated|ED", 
+                                          colnames(patientImpact.hospitalCapacity))] %>% 
+organized.capacity <- select(organized.capacity, -organized.capacity, -hospital_pk, -state, -collection_week, -ccn, 
+         -hospital_name, -address, -city, -zip, -hospital_subtype)
+all_adult_hospital_beds_7_day_avg, 
+total_adult_patients_hospitalized_confirmed_and_suspected_covid_7_day_avg, 
+total_pediatric_patients_hospitalized_confirmed_and_suspected_covid_7_day_avg, 
+staffed_icu_adult_patients_confirmed_and_suspected_covid_7_day_avg)
+View(organized.capacity)
 
 # patientImpact.hospitalCapacity <- as.data.frame(patientImpact.hospitalCapacity)
 # patientImpact.county <- aggregate(patientImpact.hospitalCapacity[, 4:ncol(patientImpact.hospitalCapacity)] ~ 
