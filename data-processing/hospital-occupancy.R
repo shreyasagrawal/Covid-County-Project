@@ -25,7 +25,9 @@ strings.to.check <- c("organized.capacity", "hospital_pk", "state",
                       "ccn", "hospital_name", "address", "city", "zip", 
                       "hospital_subtype", "pediatric", "influenza", "suspected", 
                       "admission", "vaccinated", "ED", "is_metro_micro", 
-                      "hhs_ids", "is_corrected")
+                      "hhs_ids", "is_corrected", 
+                      "all_adult_hospital_beds_7_day_avg")
+
 for (string in strings.to.check) {
   matching.vars <- grep(string, colnames(patientImpact.hospitalCapacity))
   if (length(matching.vars) > 0) {
@@ -33,3 +35,9 @@ for (string in strings.to.check) {
       patientImpact.hospitalCapacity[, -matching.vars]
   }
 }
+
+# Check how many N/A terms in a column
+column.to.check <- "all_adult_hospital_beds_7_day_avg"
+na.count <- sum(is.na(patientImpact.hospitalCapacity[[column.to.check]]))
+cat(paste("The number of N/A values in column", column.to.check, 
+          "is:", na.count)) # too many cases missing for this column
