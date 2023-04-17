@@ -15,18 +15,29 @@ View(patientImpact.hospitalCapacity)
 # Convert collection_week to Date class
 patientImpact.hospitalCapacity$collection_week <- as.Date(patientImpact.hospitalCapacity$collection_week)
 
-# Create week_number column
-week_number <- strftime(patientImpact.hospitalCapacity$collection_week, format = "%V")
+# Create year_number column
+year_number <- strftime(patientImpact.hospitalCapacity$collection_week, 
+                        format = "%Y")
 patientImpact.hospitalCapacity <- add_column(patientImpact.hospitalCapacity, 
-                                             week_number, .after = 1)
+                                             year_number, .after = 1)
+
+# Create week_number column
+week_number <- strftime(patientImpact.hospitalCapacity$collection_week, 
+                        format = "%V")
+patientImpact.hospitalCapacity <- add_column(patientImpact.hospitalCapacity, 
+                                             week_number, .after = 2)
 
 # Delete excessive variables
-strings.to.check <- c("organized.capacity", "hospital_pk", "state", 
-                      "ccn", "hospital_name", "address", "city", "zip", 
-                      "hospital_subtype", "pediatric", "influenza", "suspected", 
+strings.to.check <- c("hospital_name", "hospital_subtype", "organized.capacity", "hospital_pk", "state", 
+                      "ccn", "address", "city", "zip", 
+                      "pediatric", "influenza", "suspected", 
                       "admission", "vaccinated", "ED", "is_metro_micro", 
                       "hhs_ids", "is_corrected", 
-                      "all_adult_hospital_beds_7_day_avg")
+                      "total_beds_7_day_avg")
+
+# total_beds_7_day_avg was deleted because it included both inpatient and 
+# outpatient beds, of which the outpatient beds were also included in the total 
+# count of ICU beds for each hospital
 
 for (string in strings.to.check) {
   matching.vars <- grep(string, colnames(patientImpact.hospitalCapacity))
@@ -36,8 +47,30 @@ for (string in strings.to.check) {
   }
 }
 
+# Integrate rows with the same week_number, year_number, and fips_code
+# Because all variables were counts, making integration by additions reasonable
+patientImpact.hospitalCapacity %>% 
+  group_by(year_number, week_number, fips_code) %>% 
+  summarise(across(1:4, first), 
+            across(5:39, ~ (if (n() == 1) first 
+                            else sum(., na.rm = TRUE)))) %>% 
+  ungroup()
+
+# Change -999999.00 to N/A
+# -999999.00 represents the suppression to the file for sums and averages less 
+# than four, for which assuming it to be 0 will not be reasonable because we 
+# may not know the actual value -999999.00 represents
+patientImpact.hospitalCapacity[patientImpact.hospitalCapacity ==
+                                 -999999.0] <- NA
+patientImpact.hospitalCapacity[patientImpact.hospitalCapacity ==
+                                 -999999] <- NA
+
+write.csv(patientImpact.hospitalCapacity, 
+          file = "/Users/cameronlian/Desktop/Covid-County-Project/merged-datasets/patient-impact-hospital-capacity-merged.csv", 
+          row.names = FALSE)
+
 # Check how many N/A terms in a column
-column.to.check <- "all_adult_hospital_beds_7_day_avg"
-na.count <- sum(is.na(patientImpact.hospitalCapacity[[column.to.check]]))
-cat(paste("The number of N/A values in column", column.to.check, 
-          "is:", na.count)) # too many cases missing for this column
+# column.to.check <- "all_adult_hospital_beds_7_day_avg"
+# na.count <- sum(is.na(patientImpact.hospitalCapacity[[column.to.check]]))
+# cat(paste("The number of N/A values in column", column.to.check, 
+#           "is:", na.count)) # too many cases missing for this column
