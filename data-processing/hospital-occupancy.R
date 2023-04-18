@@ -66,7 +66,7 @@ patientImpact.hospitalCapacity[patientImpact.hospitalCapacity ==
                                  -999999] <- NA
 
 write.csv(patientImpact.hospitalCapacity, 
-          file = "/Users/cameronlian/Desktop/Covid-County-Project/merged-datasets/patient-impact-hospital-capacity-merged.csv", 
+          file = "/Users/cameronlian/Desktop/patient-impact-hospital-capacity-merged.csv", 
           row.names = FALSE)
 
 # Check how many N/A terms in a column
