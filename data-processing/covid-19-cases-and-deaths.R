@@ -1,6 +1,7 @@
 # Package prep
 require(tidyr)
 require(dplyr)
+require(tibble)
 require(readr)
 require(mosaic)
 require(ggplot2)
@@ -15,26 +16,32 @@ us.counties.2023 <- read_csv("https://www.dropbox.com/s/luff8kr8p2j7g5l/us-count
 # Combining all datasets above into a master set ----
 us.counties.all <- rbind(us.counties.2020, us.counties.2021, 
                          us.counties.2022, us.counties.2023)
-# View(us.counties.all)
+mydata <- us.counties.all
+
+# Convert date to Date class
+mydata$date <- as.Date(mydata$date)
+class(mydata$date)
+
+# Create year_number column
+year_number <- strftime(mydata$date, format = "%Y")
+mydata <- add_column(mydata, year_number, .after = 1)
+
+# Create week_number column
+week_number <- strftime(mydata$date, format = "%V")
+mydata <- add_column(mydata, week_number, .after = 2)
 
 # Calculate difference in cases/deaths for each states by time ----
-counties.sorted <- us.counties.all %>% 
-  group_by(county) %>% 
+mydata.sorted <- mydata %>% 
+  group_by(fips) %>% 
   mutate(diff.cases = ifelse(fips == lag(fips), 
                        cases - lag(cases), NA)) %>% 
   mutate(diff.deaths = ifelse(fips == lag(fips), 
                               deaths - lag(deaths), NA))
-counties.sorted$date <- as.Date(counties.sorted$date, 
-                                format = "%Y-%m-%d") 
-View(counties.sorted)
+View(mydata.sorted)
 
-# Considering daily cases/deaths changes were trivial
-# Aggregate daily data into months ----
-counties.monthly <- aggregate(diff.cases ~ fips + 
-                                format(date, "%Y-%m"), 
-                              data = counties.sorted, sum)
-View(counties.monthly)
-
-ggplot(counties.monthly, 
-       mapping = aes(x = fips, y = diff.cases)) +
-  geom_boxplot()
+# Integrate rows with the same week_number, year_number, and fips_code
+mydata %>% 
+  group_by(year_number, week_number, fips) %>% 
+  summarise_at(vars(cases, deaths), sum) %>% 
+  ungroup()
+View(mydata)
