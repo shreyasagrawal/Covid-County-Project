@@ -36,12 +36,25 @@ mydata.sorted <- mydata %>%
   mutate(diff.cases = ifelse(fips == lag(fips), 
                        cases - lag(cases), NA)) %>% 
   mutate(diff.deaths = ifelse(fips == lag(fips), 
-                              deaths - lag(deaths), NA))
+                              deaths - lag(deaths), NA)) %>% 
+  ungroup()
+
+# delete not useful columns
+strings.to.check <- c("county", "cases", "deaths", "state", "date")
+
+for (string in strings.to.check) {
+  matching.vars <- grep(string, colnames(mydata.sorted))
+  if (length(matching.vars) > 0) {
+    mydata.sorted <- mydata.sorted[, -matching.vars]
+  }
+}
+
 View(mydata.sorted)
 
 # Integrate rows with the same week_number, year_number, and fips_code
-mydata %>% 
-  group_by(year_number, week_number, fips) %>% 
-  summarise_at(vars(cases, deaths), sum) %>% 
+mydata.sorted %>% 
+  group_by(year_number, week_number, fips_code) %>% 
+  summarise(across(1:4, first), 
+            across(5:39, ~ (if (n() == 1) first 
+                            else sum(., na.rm = TRUE)))) %>% 
   ungroup()
-View(mydata)
