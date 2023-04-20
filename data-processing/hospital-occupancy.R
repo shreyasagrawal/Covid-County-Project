@@ -11,6 +11,10 @@ require(reshape2)
 # COVID-19 Reported Patient Impact and Hospital Capacity by Facility (data source): https://healthdata.gov/stories/s/nhgk-5gpv
 patientImpact.hospitalCapacity <- read_csv("https://www.dropbox.com/s/fgb0ga3o84bfajp/covid-19_reported_patient_impact_and_hospital_capacity_by_facility.csv?dl=1")
 View(patientImpact.hospitalCapacity)
+missing_data <- data.frame(variable = colnames(patientImpact.hospitalCapacity), 
+                           missing_percentage = 
+                             colMeans(is.na(patientImpact.hospitalCapacity)) * 100)
+write.csv(missing_data, file = "/Users/cameronlian/Desktop/missing_data.csv", row.names = FALSE)
 
 # Convert collection_week to Date class
 patientImpact.hospitalCapacity$collection_week <- as.Date(patientImpact.hospitalCapacity$collection_week)
