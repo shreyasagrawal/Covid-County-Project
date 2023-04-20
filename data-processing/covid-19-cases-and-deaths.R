@@ -63,3 +63,7 @@ mydata.results$diff.cases <- mydata.results$diff.cases[,1]
 mydata.results$diff.deaths <- mydata.results$diff.deaths[,1]
 
 View(mydata.results)
+
+write.csv(mydata.results, 
+          file = "/Users/cameronlian/Desktop/covid-cases-deaths.csv", 
+          row.names = FALSE)
