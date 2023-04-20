@@ -18,6 +18,9 @@ us.counties.all <- rbind(us.counties.2020, us.counties.2021,
                          us.counties.2022, us.counties.2023)
 mydata <- us.counties.all
 
+# Add fips code to New York City, Joplin, Kansas City
+
+
 # Convert date to Date class
 mydata$date <- as.Date(mydata$date)
 class(mydata$date)
