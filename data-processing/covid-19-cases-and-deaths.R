@@ -8,6 +8,7 @@ require(ggplot2)
 require(reshape2)
 
 # Cases/deaths (counties) by time ----
+# https://www.nytimes.com/interactive/2021/us/covid-cases.html
 us.counties.2020 <- read_csv("https://www.dropbox.com/s/a6c6m3b3jh5a172/us-counties-2020.csv?dl=1")
 us.counties.2021 <- read_csv("https://www.dropbox.com/s/cnjkrvm6tlwwqup/us-counties-2021.csv?dl=1")
 us.counties.2022 <- read_csv("https://www.dropbox.com/s/74ca13pn9c09kqt/us-counties-2022.csv?dl=1")
@@ -19,7 +20,12 @@ us.counties.all <- rbind(us.counties.2020, us.counties.2021,
 mydata <- us.counties.all
 
 # Add fips code to New York City, Joplin, Kansas City
+row_index <- which(mydata$county == "New York City")
+mydata$fips[row_index] <- "36061"
 
+# Delete rows for Joplin and Kansas City (county)
+mydata <- subset(mydata, !(county %in%
+                             c("Joplin", "Kansas City")))
 
 # Convert date to Date class
 mydata$date <- as.Date(mydata$date)
