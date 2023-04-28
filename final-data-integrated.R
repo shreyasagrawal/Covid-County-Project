@@ -1,4 +1,4 @@
-# Package prep
+# Package prep ----
 require(tidyr)
 require(dplyr)
 require(tibble)
@@ -7,13 +7,12 @@ require(mosaic)
 require(ggplot2)
 require(reshape2)
 
-# Dataset was processed in a separate document; new variables will be created
-# and calculated
+# Data prep ----
 dataset <- read_csv("https://www.dropbox.com/s/r3e5u7cz30ibe33/patient-impact-hospital-capacity-merged.csv?dl=1") # Processed hospital capacity
 covid <- read_csv("https://www.dropbox.com/s/y8wrfcq1ntl30pf/covid-cases-deaths.csv?dl=1") # COVID-19 cases and deaths
-View(dataset)
-View(covid)
 
+# Hospital occupancy ----
+## Variable processing ----
 # Change the column name in covid
 colnames(covid)[colnames(covid) == "fips"] <- "fips_code"
 
@@ -22,6 +21,8 @@ colnames(covid)[colnames(covid) == "fips"] <- "fips_code"
 combined <- merge(dataset, covid, 
                   by = c("week_number", "year_number", "fips_code"), 
                   all.x = TRUE)
+
+## New calculated variables ----
 
 attach(combined) # calculate percentages for COVID patients
 perc_adult_covid_hospitalized <-
@@ -74,7 +75,15 @@ new.columns <- data.frame(perc_adult_covid_hospitalized,
 new.combined <- cbind(combined.processed, new.columns)
 colnames(new.combined)
 
-# Calculate the percentage of missing data in new.combined
+# Vaccination ----
+
+# Economic characteristics ----
+
+# Demographic and housing ----
+
+# PLACE project ----
+
+# Calculate percent missing variables ----
 missing_data <- data.frame(variable = colnames(new.combined), 
                            missing_percentage = 
                              colMeans(is.na(new.combined)) * 100)
