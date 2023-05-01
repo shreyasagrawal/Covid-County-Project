@@ -8,9 +8,9 @@ require(reshape2)
 require(stringr)
 
 # Data prep
-places.2020 <- read_csv("https://www.dropbox.com/s/6p43l8phzm1qj85/County%20Data%20%28GIS%20Friendly%20Format%29%2C%202020%20release.csv?dl=1")
-places.2021 <- read_csv("https://www.dropbox.com/s/o2t8n606trxska6/County%20Data%20%28GIS%20Friendly%20Format%29%2C%202021%20release.csv?dl=1")
-places.2022 <- read_csv("https://www.dropbox.com/s/27en8ytece1d3vd/County%20Data%20%28GIS%20Friendly%20Format%29%2C%202022%20release.csv?dl=1")
+places_2020 <- read_csv("https://www.dropbox.com/s/6p43l8phzm1qj85/County%20Data%20%28GIS%20Friendly%20Format%29%2C%202020%20release.csv?dl=1")
+places_2021 <- read_csv("https://www.dropbox.com/s/o2t8n606trxska6/County%20Data%20%28GIS%20Friendly%20Format%29%2C%202021%20release.csv?dl=1")
+places_2022 <- read_csv("https://www.dropbox.com/s/27en8ytece1d3vd/County%20Data%20%28GIS%20Friendly%20Format%29%2C%202022%20release.csv?dl=1")
 
 # PLACES data cleaning & merging
 
@@ -65,6 +65,17 @@ places_20_21_22 <- places_20_21_22 %>%
   filter(stateabbr != "NJ") %>%
   select(-depression, -ghlth)
 
+View(places_20_21_22)
+
+places_full <- places_20_21_22
+View(places_full)
+
+places_full$stateabbr <- NULL
+places_full$countyname <- NULL
+
+write.csv(places_full, 
+          file = "/Users/cameronlian/Desktop/places-project-chronic-diseases-cleaned.csv", 
+          row.names = FALSE)
+
 # places_20_21[!complete.cases(places_20_21), ] check for missing values
 # places_20_21_22[!complete.cases(places_20_21_22), ] check for missing values
-```

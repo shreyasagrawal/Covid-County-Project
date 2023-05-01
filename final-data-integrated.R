@@ -8,19 +8,35 @@ require(ggplot2)
 require(reshape2)
 
 # Data prep ----
-dataset <- read_csv("https://www.dropbox.com/s/r3e5u7cz30ibe33/patient-impact-hospital-capacity-merged.csv?dl=1") # Processed hospital capacity
+hospital <- read_csv("https://www.dropbox.com/s/r3e5u7cz30ibe33/patient-impact-hospital-capacity-cleaned.csv?dl=1") # Processed hospital capacity
+places <- read_csv("https://www.dropbox.com/s/wqz4xrir84g60qy/places-project-chronic-diseases-cleaned.csv?dl=1") # Processed PLACES project data
 covid <- read_csv("https://www.dropbox.com/s/y8wrfcq1ntl30pf/covid-cases-deaths.csv?dl=1") # COVID-19 cases and deaths
 
 # Hospital occupancy ----
 ## Variable processing ----
-# Change the column name in covid
+
+### Column name change ----
+# COVID data
 colnames(covid)[colnames(covid) == "fips"] <- "fips_code"
 
-# Merge the two datasets by week_number, year_number, and fips_code
-# Ignore any columns that did not match by mentioned variables
-combined <- merge(dataset, covid, 
-                  by = c("week_number", "year_number", "fips_code"), 
-                  all.x = TRUE)
+# PLACES data
+colnames(places)[colnames(places) == "fips"] <- "fips_code"
+colnames(places)[colnames(places) == "week"] <- "week_number"
+colnames(places)[colnames(places) == "year"] <- "year_number"
+View(places)
+
+### Merging ----
+# by week_number, year_number, and fips_code
+df_list <- list(hospital, places, covid)
+combined <- Reduce(function(x, y) 
+  merge(x, y, by = c("week_number", "year_number", "fips_code")), df_list)
+View(combined)
+
+# Check missing values for the imported data frame
+column.to.check <- "access2"
+na.count <- sum(is.na(combined[[column.to.check]]))
+cat(paste("The number of N/A values in column", column.to.check,
+          "is:", na.count)) # too many cases missing for this column
 
 ## New calculated variables ----
 
@@ -74,14 +90,6 @@ new.columns <- data.frame(perc_adult_covid_hospitalized,
                           covid_all_adult_icu_beds_perc_coverage)
 new.combined <- cbind(combined.processed, new.columns)
 colnames(new.combined)
-
-# Vaccination ----
-
-# Economic characteristics ----
-
-# Demographic and housing ----
-
-# PLACE project ----
 
 # Calculate percent missing variables ----
 missing_data <- data.frame(variable = colnames(new.combined), 
