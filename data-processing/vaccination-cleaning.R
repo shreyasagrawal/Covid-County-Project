@@ -27,8 +27,6 @@ year_number <- strftime(us.vaccination$collection_week,
                         format = "%Y")
 us.vaccination$year_number <- year_number
 
-us.vaccination <- us.vaccination[, ncol(ncol(us.vaccination), 1:(ncol(us.vaccination)-1))]
-
 # Create week_number column
 week_number <- strftime(us.vaccination$collection_week, 
                         format = "%V")
@@ -47,7 +45,6 @@ us.vaccination <- us.vaccination %>%
   group_by(week_number, year_number, FIPS) %>%
   summarise(across(6:10, sum, na.rm = TRUE))
 
-
 # Change -999999.00 to N/A
 # -999999.00 represents the suppression to the file for sums and averages less 
 # than four, for which assuming it to be 0 will not be reasonable because we 
@@ -55,4 +52,4 @@ us.vaccination <- us.vaccination %>%
 us.vaccination[us.vaccination == -999999.0] <- NA
 us.vaccination[us.vaccination == -999999] <- NA
 
-write.csv(us.vaccination, "~/OneDrive - Grinnell College/2022-23/Spring/STA310/project/us_vaccination-cleaned.csv", row.names = FALSE)
+write.csv(us.vaccination, "/Users/cameronlian/Desktop/vaccination-cleaned.csv", row.names = FALSE)

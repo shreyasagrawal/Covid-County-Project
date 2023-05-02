@@ -31,7 +31,7 @@ c21 <- read.csv("https://www.dropbox.com/s/i4z34ovswio7aax/demographic-and-housi
 ```{r}
 # Select variables of interest
 
-c20<- select (c20, GEO_ID, DP05_0024PE, DP05_0001E, DP05_0086E, DP05_0037E, DP05_0038E, DP05_0071E, DP05_0039E, DP05_0044E, DP05_0002E, DP05_0003E, DP05_0019E)
+c20 <- select(c20, GEO_ID, DP05_0024PE, DP05_0001E, DP05_0086E, DP05_0037E, DP05_0038E, DP05_0071E, DP05_0039E, DP05_0044E, DP05_0002E, DP05_0003E, DP05_0019E)
 c2020 <- c20 %>% 
          rename("fips" = "GEO_ID",
                "65+" = "DP05_0024PE",
@@ -123,6 +123,7 @@ c2021 <- c2021 %>% slice(rep(1:n(), 52)) %>% mutate(year = 2021, week = rep(1:52
 # Combine datasets
 
 demo.all <- rbind(c2020, c2021)
-
+write.csv(demo.all, file = "/Users/cameronlian/Desktop/demographic-cleaned.csv", 
+          row.names = FALSE)
 ```
 
