@@ -13,6 +13,8 @@ hospital <- read_csv("https://www.dropbox.com/s/worwm4rnh8mu7tj/patient-impact-h
 places <- read_csv("https://www.dropbox.com/s/wqz4xrir84g60qy/places-project-chronic-diseases-cleaned.csv?dl=1") # Processed PLACES project data
 covid <- read_csv("https://www.dropbox.com/s/ttj2bfdmspfsiw7/covid-cases-deaths-cleaned.csv?dl=1") # COVID-19 cases and deaths
 vaccination <- read_csv("https://www.dropbox.com/s/bj9xofn2ctmtjtj/us_vaccination-cleaned.csv?dl=1") # Vaccination data
+demographic <- read_csv("https://www.dropbox.com/s/b5o11qew0d899p3/demographic-final.csv?dl=1") # Demographic data
+economics <- read_csv("https://www.dropbox.com/s/hvtlxdspndnxizs/economic-characteristics-cleaned.csv?dl=1") # Economics data
 
 # New calculated variables for hospital occupancy data ----
 
@@ -77,6 +79,19 @@ View(places)
 colnames(vaccination)[colnames(vaccination) == "FIPS"] <- "fips_code"
 colnames(vaccination)
 
+# Demographic data
+colnames(demographic)[colnames(demographic) == "fips"] <- "fips_code"
+colnames(demographic)[colnames(demographic) == "week"] <- "week_number"
+colnames(demographic)[colnames(demographic) == "year"] <- "year_number"
+demographic$...1 <- NULL
+
+# Economics data
+colnames(economics)[colnames(economics) == "Fips"] <- "fips_code"
+colnames(economics)[colnames(economics) == "Week"] <- "week_number"
+colnames(economics)[colnames(economics) == "Year"] <- "year_number"
+economics$Geography <- NULL
+economics$`Geographic Area Name` <- NULL
+ 
 # Hospital data
 colnames(hospital)
 hospital <- hospital[, -c(4:38)]
@@ -85,13 +100,20 @@ colnames(combined_hospital)
 
 ## Merging ----
 # by week_number, year_number, and fips_code
-df_list <- list(combined_hospital, places, covid, vaccination)
+df_list <- list(combined_hospital, covid, vaccination, 
+                demographic, places, economics)
 combined <- Reduce(function(x, y) 
   merge(x, y, by = c("week_number", "year_number", "fips_code")), df_list)
 colnames(combined)
 
+# Change every NA term to generic name NA
 combined[is.na(combined) | combined == "Inf"] = NA
-new_combined <- na.omit(combined, cols = "CFR")
+# new_combined <- na.omit(combined, cols = "CFR")
+
+# Export ----
+write.csv(new_combined, 
+          file = "/Users/cameronlian/Desktop/final-integrated-data.csv", 
+          row.names = FALSE)
 
 # Models ----
 ## Original linear regression model ----
@@ -99,11 +121,6 @@ full_model <- lm(`CFR` ~ ., data = new_combined)
 step_model <- step(new_combined, direction = "both", 
                    scope = formula(full_lm), trace = 0)
 summary(step_model)
-
-# Export ----
-write.csv(new_combined, 
-          file = "/Users/cameronlian/Desktop/final-integrated-data.csv", 
-          row.names = FALSE)
 
 # Calculate percent missing variables ----
 # missing_data <- data.frame(variable = colnames(new.combined), 

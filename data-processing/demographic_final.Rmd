@@ -15,14 +15,15 @@ require(dplyr)
 require(tidyverse)
 require(stringr)
 require(tidyr)
+require(readr)
 ```
 
 
 ## Data
 ```{r}
 
-c20 <- read.csv("https://www.dropbox.com/s/t93jbobugeakvid/demographic-and-housing-estimate-2020.csv?dl=1")
-c21 <- read.csv("https://www.dropbox.com/s/i4z34ovswio7aax/demographic-and-housing-estimate-2021.csv?dl=1")
+c20 <- read_csv("https://www.dropbox.com/s/t93jbobugeakvid/demographic-and-housing-estimate-2020.csv?dl=1")
+c21 <- read_csv("https://www.dropbox.com/s/i4z34ovswio7aax/demographic-and-housing-estimate-2021.csv?dl=1")
 
 ```
 
