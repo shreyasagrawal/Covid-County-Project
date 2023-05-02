@@ -100,8 +100,14 @@ step_model <- step(new_combined, direction = "both",
                    scope = formula(full_lm), trace = 0)
 summary(step_model)
 
+# Export ----
+write.csv(new_combined, 
+          file = "/Users/cameronlian/Desktop/final-integrated-data.csv", 
+          row.names = FALSE)
+
 # Calculate percent missing variables ----
-missing_data <- data.frame(variable = colnames(new.combined), 
-                           missing_percentage = 
-                             colMeans(is.na(new.combined)) * 100)
-write.csv(missing_data, file = "/Users/cameronlian/Desktop/missing_data.csv", row.names = FALSE)
+# missing_data <- data.frame(variable = colnames(new.combined), 
+#                            missing_percentage = 
+#                              colMeans(is.na(new.combined)) * 100)
+# write.csv(missing_data, file = "/Users/cameronlian/Desktop/missing_data.csv", 
+#           row.names = FALSE)
