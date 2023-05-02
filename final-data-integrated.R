@@ -9,7 +9,7 @@ require(reshape2)
 require(MASS)
 
 # Data prep ----
-hospital <- read_csv("https://www.dropbox.com/s/r3e5u7cz30ibe33/patient-impact-hospital-capacity-cleaned.csv?dl=1") # Processed hospital capacity
+hospital <- read_csv("https://www.dropbox.com/s/worwm4rnh8mu7tj/patient-impact-hospital-capacity-cleaned.csv?dl=1") # Processed hospital capacity
 places <- read_csv("https://www.dropbox.com/s/wqz4xrir84g60qy/places-project-chronic-diseases-cleaned.csv?dl=1") # Processed PLACES project data
 covid <- read_csv("https://www.dropbox.com/s/ttj2bfdmspfsiw7/covid-cases-deaths-cleaned.csv?dl=1") # COVID-19 cases and deaths
 

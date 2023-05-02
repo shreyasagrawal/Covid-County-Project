@@ -51,6 +51,10 @@ for (string in strings.to.check) {
   }
 }
 
+# Delete all rows others than 2020 and 2021
+patientImpact.hospitalCapacity <- patientImpact.hospitalCapacity %>% 
+  filter(year_number == 2020 | year_number == 2021)
+
 # Integrate rows with the same week_number, year_number, and fips_code
 # Because all variables were counts, making integration by additions reasonable
 patientImpact.hospitalCapacity <- patientImpact.hospitalCapacity %>% 
@@ -58,7 +62,8 @@ patientImpact.hospitalCapacity <- patientImpact.hospitalCapacity %>%
   # summarise(across(1:4, first), 
   #           across(5:39, ~ (if (n() == 1) first 
   #                           else sum(., na.rm = TRUE)))) %>% 
-  summarise(across(5:39, sum, na.rm = TRUE))
+  summarise(across(5:39, sum, 
+                   na.rm = TRUE))
 
 # Change -999999.00 to N/A
 # -999999.00 represents the suppression to the file for sums and averages less 
