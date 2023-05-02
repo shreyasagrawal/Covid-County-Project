@@ -1,0 +1,128 @@
+---
+title: "Project"
+author: "Yoel Hooper-Antunez"
+date: '2023-05-02'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Packages
+```{r}
+require(dplyr)
+require(tidyverse)
+require(stringr)
+require(tidyr)
+```
+
+
+## Data
+```{r}
+
+c20 <- read.csv("https://www.dropbox.com/s/t93jbobugeakvid/demographic-and-housing-estimate-2020.csv?dl=1")
+c21 <- read.csv("https://www.dropbox.com/s/i4z34ovswio7aax/demographic-and-housing-estimate-2021.csv?dl=1")
+
+```
+
+## Cleaning Data
+
+```{r}
+# Select variables of interest
+
+c20<- select (c20, GEO_ID, DP05_0024PE, DP05_0001E, DP05_0086E, DP05_0037E, DP05_0038E, DP05_0071E, DP05_0039E, DP05_0044E, DP05_0002E, DP05_0003E, DP05_0019E)
+c2020 <- c20 %>% 
+         rename("fips" = "GEO_ID",
+               "65+" = "DP05_0024PE",
+               "population" = "DP05_0001E",
+               "housing_units" = "DP05_0086E",
+               "white" = "DP05_0037E",
+               "black" = "DP05_0038E",
+               "hispanic" = "DP05_0071E",
+               "native" = "DP05_0039E",
+               "asian" = "DP05_0044E",
+               "male" = "DP05_0002E",
+               "female" = "DP05_0003E",
+               "under18" = "DP05_0019E")
+c2020$fips=str_sub(c2020$fips,-5,-1)
+
+c21 <- select(c21, GEO_ID, DP05_0024PE, DP05_0001E, DP05_0086E, DP05_0037E, DP05_0038E, DP05_0071E, DP05_0039E, DP05_0044E, DP05_0002E, DP05_0003E, DP05_0019E)
+c2021 <- c21 %>% 
+         rename("fips" = "GEO_ID",
+               "65+" = "DP05_0024PE",
+               "population" = "DP05_0001E",
+               "housing_units" = "DP05_0086E",
+               "white" = "DP05_0037E",
+               "black" = "DP05_0038E",
+               "hispanic" = "DP05_0071E",
+               "native" = "DP05_0039E",
+               "asian" = "DP05_0044E",
+               "male" = "DP05_0002E",
+               "female" = "DP05_0003E",
+               "under18" = "DP05_0019E")
+c2021$fips=str_sub(c2021$fips,-5,-1)
+
+c2020 <- c2020[-c(1),]
+c2021 <- c2021[-c(1),]
+
+# Standardize 2020
+c2020 <- c2020 %>%
+  mutate(year = 2020)
+
+c2020$population <-as.numeric(c2020$population)
+c2020$white <-as.numeric(c2020$white)
+c2020$black <-as.numeric(c2020$black)
+c2020$hispanic <-as.numeric(c2020$hispanic)
+c2020$native <-as.numeric(c2020$native)
+c2020$asian <-as.numeric(c2020$asian)
+c2020$male <-as.numeric(c2020$male)
+c2020$female <-as.numeric(c2020$female)
+c2020$under18 <-as.numeric(c2020$under18)
+
+c2020 <- c2020 %>% mutate(white = white/population)
+c2020 <- c2020 %>% mutate(black = black/population)
+c2020 <- c2020 %>% mutate(hispanic = hispanic/population)
+c2020 <- c2020 %>% mutate(native = native/population)
+c2020 <- c2020 %>% mutate(asian = asian/population)
+c2020 <- c2020 %>% mutate(male = male/population)
+c2020 <- c2020 %>% mutate(female = female/population)
+c2020 <- c2020 %>% mutate(under18 = under18/population)
+
+# Add weeks
+
+c2020 <- c2020 %>% slice(rep(1:n(), 52)) %>% mutate(year = 2020, week = rep(1:52, each = 3221))
+
+# Standardize 2021
+c2021 <- c2021 %>%
+  mutate(year = 2021)
+
+c2021$population <-as.numeric(c2021$population)
+c2021$white <-as.numeric(c2021$white)
+c2021$black <-as.numeric(c2021$black)
+c2021$hispanic <-as.numeric(c2021$hispanic)
+c2021$native <-as.numeric(c2021$native)
+c2021$asian <-as.numeric(c2021$asian)
+c2021$male <-as.numeric(c2021$male)
+c2021$female <-as.numeric(c2021$female)
+c2021$under18 <-as.numeric(c2021$under18)
+
+c2021 <- c2021 %>% mutate(white = white/population)
+c2021 <- c2021 %>% mutate(black = black/population)
+c2021 <- c2021 %>% mutate(hispanic = hispanic/population)
+c2021 <- c2021 %>% mutate(native = native/population)
+c2021 <- c2021 %>% mutate(asian = asian/population)
+c2021 <- c2021 %>% mutate(male = male/population)
+c2021 <- c2021 %>% mutate(female = female/population)
+c2021 <- c2021 %>% mutate(under18 = under18/population)
+
+
+# Add weeks
+c2021 <- c2021 %>% slice(rep(1:n(), 52)) %>% mutate(year = 2021, week = rep(1:52, each = 3221))
+
+# Combine datasets
+
+demo.all <- rbind(c2020, c2021)
+
+```
+
