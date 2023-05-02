@@ -14,6 +14,10 @@ econ.2020 <- read.csv("https://www.dropbox.com/s/te81iz8nmg1q9ks/economic-charac
 econ.2021 <- read.csv("https://www.dropbox.com/s/q0iod9xnpjjdpcl/economic-characteristics-2021.csv?dl=1")
 
 
+econ.2020 <-  econ.2020 %>% slice(rep(1:n(),52)) %>% mutate(Year = 2020, Week = rep(1:52,each = 3222))
+econ.2021 <-  econ.2021 %>% slice(rep(1:n(),52)) %>% mutate(Year = 2021, Week = rep(1:52,each = 3222))
+
+econ.2021$Year <- 2021
 ### Combining all datasets above into a whole data set ----
 econ.all <- rbind(econ.2020, econ.2021)
 
@@ -43,5 +47,6 @@ as.numeric(fips_codes$fips)
 
 ###
 econ.all <- econ.all %>% separate(`Geographic Area Name`, sep=",", into = c("County", "State")) 
-full_join(econ.all, fips_codes, by=c('State'='state_name', 'County'='county'))
+ 
+# Add week
 
