@@ -6,76 +6,37 @@ require(mosaic)
 require(ggplot2)
 require(reshape2)
 require(stringr)
+# Economics characteristics dataset from Census data ----
 
-# Data prep
-places_2020 <- read_csv("https://www.dropbox.com/s/6p43l8phzm1qj85/County%20Data%20%28GIS%20Friendly%20Format%29%2C%202020%20release.csv?dl=1")
-places_2021 <- read_csv("https://www.dropbox.com/s/o2t8n606trxska6/County%20Data%20%28GIS%20Friendly%20Format%29%2C%202021%20release.csv?dl=1")
-places_2022 <- read_csv("https://www.dropbox.com/s/27en8ytece1d3vd/County%20Data%20%28GIS%20Friendly%20Format%29%2C%202022%20release.csv?dl=1")
+#econ.2019 <- read.csv("https://www.dropbox.com/s/onf0wf2l0j6tl84/economic-characteristics-2019.csv?dl=1")
+econ.2020 <- read.csv("https://www.dropbox.com/s/te81iz8nmg1q9ks/economic-characteristics-2020.csv?dl=1")
+econ.2021 <- read.csv("https://www.dropbox.com/s/q0iod9xnpjjdpcl/economic-characteristics-2021.csv?dl=1")
 
-# PLACES data cleaning & merging
+### Add week
+econ.2020 <-  econ.2020 %>% slice(rep(1:n(),52)) %>% mutate(Year = 2020, Week = rep(1:52,each = 3222))
+econ.2021 <-  econ.2021 %>% slice(rep(1:n(),52)) %>% mutate(Year = 2021, Week = rep(1:52,each = 3222))
 
-# clean 2020 data
-cleanplaces_20 <- places_2020 %>%
-  select(-ends_with(c("95CI", "CrudePrev"))) %>%
-  select(-StateDesc, -TotalPopulation, -Geolocation) %>% # -StateAbbr, -CountyName
-  rename("fips" = "CountyFIPS") %>%
-  rename_with(~str_remove(., "_AdjPrev")) %>%
-  rename_all(., .funs = tolower) %>%
-  slice(rep(1:n(), 52)) %>%
-  mutate(year = 2020,
-         week = rep(1:52, each = 3142))
+### Combining all datasets above into a whole data set ----
+econ.all <- rbind(econ.2020, econ.2021)
 
-# clean 2021 data
-cleanplaces_21 <- places_2021 %>%
-  select(-ends_with(c("95CI", "CrudePrev"))) %>%
-  select(-StateDesc, -TotalPopulation, -Geolocation) %>% # -StateAbbr, -CountyName
-  rename("fips" = "CountyFIPS") %>%
-  rename_with(~str_remove(., "_AdjPrev")) %>%
-  rename_all(., .funs = tolower) %>%
-  slice(rep(1:n(), 52)) %>%
-  mutate(year = 2021,
-         week = rep(1:52, each = 3142))
 
-# clean 2022 data
-cleanplaces_22 <- places_2022 %>%
-  select(-ends_with(c("95CI", "CrudePrev"))) %>%
-  select(-StateDesc, -TotalPopulation, -Geolocation) %>% # -StateAbbr, -CountyName
-  rename("fips" = "CountyFIPS") %>%
-  rename_with(~str_remove(., "_AdjPrev")) %>%
-  rename_all(., .funs = tolower) %>%
-  slice(rep(1:n(), 52)) %>%
-  mutate(year = 2022,
-         week = rep(1:52, each = 3143))
+### Choosing variables 
+econ.all <- econ.all %>% select('GEO_ID','NAME','DP03_0005E','DP03_0021E','DP03_0119PE','DP03_0095PE','DP03_0051PE','DP03_0042PE') 
 
-# merge 2020 and 2021 data
-places_20_21 <- full_join(cleanplaces_20, cleanplaces_21)
+### Rename the columns, remove the first colummn
+colnames(econ.all) <- econ.all[1,]
+econ.all <- econ.all[-1,]
+names(econ.all)[names(econ.all) == 'Estimate!!EMPLOYMENT STATUS!!Population 16 years and over!!In labor force!!Civilian labor force!!Unemployed'] <- 'Estimate Unemployment'
+names(econ.all)[names(econ.all) == 'Percent!!PERCENTAGE OF FAMILIES AND PEOPLE WHOSE INCOME IN THE PAST 12 MONTHS IS BELOW THE POVERTY LEVEL!!All families'] <- 'Household Income Below Poverty Level Percentage'
+names(econ.all)[names(econ.all) == 'Estimate!!COMMUTING TO WORK!!Workers 16 years and over!!Public transportation (excluding taxicab)'] <- 'Public Transport Commutation'
+names(econ.all)[names(econ.all) == 'Percent!!HEALTH INSURANCE COVERAGE!!Civilian noninstitutionalized population'] <- 'Health Insurance Coverage Percentage'
+names(econ.all)[names(econ.all) == 'Percent!!INCOME AND BENEFITS (IN 2020 INFLATION-ADJUSTED DOLLARS)!!Total households'] <- 'Household Income and Benefits'
+names(econ.all)[names(econ.all) == 'Percent!!INDUSTRY!!Civilian employed population 16 years and over!!Educational services, and health care and social assistance'] <- 'Edu Health Social Industry Percentage'
 
-# remove missing values
-places_20_21 <- places_20_21 %>%
-  filter(!countyname %in% c("Copper River", "Chugach", "Valdez-Cordova")) %>%
-  filter(stateabbr != "NJ") %>%
-  select(-depression, -ghlth)
+### Check null
+#length(which(is.na(econ.all)))
 
-# merge 2020, 2021, and 2022 data
-places_20_21_22 <- full_join(places_20_21, cleanplaces_22)
-
-# remove missing values
-places_20_21_22 <- places_20_21_22 %>%
-  filter(!countyname %in% c("Copper River", "Chugach", "Valdez-Cordova")) %>%
-  filter(stateabbr != "NJ") %>%
-  select(-depression, -ghlth)
-
-View(places_20_21_22)
-
-places_full <- places_20_21_22
-View(places_full)
-
-places_full$stateabbr <- NULL
-places_full$countyname <- NULL
-
-write.csv(places_full, 
-          file = "/Users/cameronlian/Desktop/places-project-chronic-diseases-cleaned.csv", 
-          row.names = FALSE)
-
-# places_20_21[!complete.cases(places_20_21), ] check for missing values
-# places_20_21_22[!complete.cases(places_20_21_22), ] check for missing values
+### Add fips code 
+econ.all$Fips <- str_sub(econ.all$Geography,-5,-1)
+###
+econ.all <- econ.all %>% separate(`Geographic Area Name`, sep=",", into = c("County", "State")) 
