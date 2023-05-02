@@ -53,12 +53,12 @@ for (string in strings.to.check) {
 
 # Integrate rows with the same week_number, year_number, and fips_code
 # Because all variables were counts, making integration by additions reasonable
-patientImpact.hospitalCapacity %>% 
+patientImpact.hospitalCapacity <- patientImpact.hospitalCapacity %>% 
   group_by(year_number, week_number, fips_code) %>% 
-  summarise(across(1:4, first), 
-            across(5:39, ~ (if (n() == 1) first 
-                            else sum(., na.rm = TRUE)))) %>% 
-  ungroup()
+  # summarise(across(1:4, first), 
+  #           across(5:39, ~ (if (n() == 1) first 
+  #                           else sum(., na.rm = TRUE)))) %>% 
+  summarise(across(5:39, sum, na.rm = TRUE))
 
 # Change -999999.00 to N/A
 # -999999.00 represents the suppression to the file for sums and averages less 

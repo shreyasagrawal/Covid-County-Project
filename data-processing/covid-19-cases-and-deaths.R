@@ -71,8 +71,10 @@ mydata.results$deaths <- mydata.results$deaths[,2]
 mydata.results$diff.cases <- mydata.results$diff.cases[,1]
 mydata.results$diff.deaths <- mydata.results$diff.deaths[,1]
 
+# Create case fatality rate column
+mydata.results$CFR <- (mydata.results$deaths / mydata.results$cases) * 100
 View(mydata.results)
 
 write.csv(mydata.results, 
-          file = "/Users/cameronlian/Desktop/covid-cases-deaths.csv", 
+          file = "/Users/cameronlian/Desktop/covid-cases-deaths-cleaned.csv", 
           row.names = FALSE)
