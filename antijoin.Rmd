@@ -1,0 +1,33 @@
+```{r}
+covid_cases_cleaned = read.csv("https://www.dropbox.com/s/ttj2bfdmspfsiw7/covid-cases-deaths-cleaned.csv?dl=1")
+
+hospital_cleaned = read.csv("https://www.dropbox.com/s/worwm4rnh8mu7tj/patient-impact-hospital-capacity-cleaned.csv?dl=1")
+
+places_cleaned = read.csv("https://www.dropbox.com/s/wqz4xrir84g60qy/places-project-chronic-diseases-cleaned.csv?dl=1")
+
+vaccination_cleaned = read.csv("https://www.dropbox.com/s/bj9xofn2ctmtjtj/us_vaccination-cleaned.csv?dl=1")
+
+#renaming key to be "fips code" across all tables
+covid_cases_cleaned <- rename(covid_cases_cleaned, "fips_code" = "fips")
+places_cleaned <- rename(places_cleaned, "fips_code" = "fips")
+vaccination_cleaned <- rename(vaccination_cleaned, "fips_code" = "FIPS")
+
+#converting fips code to integers
+covid_cases_cleaned$fips_code <- as.integer(covid_cases_cleaned$fips_code)
+hospital_cleaned$fips_code <- as.integer(hospital_cleaned$fips_code)
+places_cleaned$fips_code <- as.integer(places_cleaned$fips_code)
+vaccination_cleaned$fips_code <- as.integer(vaccination_cleaned$fips_code)
+
+```
+
+## performing antijoin
+```{r}
+library(dplyr)
+cases_hospital_anti_join <- anti_join(covid_cases_cleaned, hospital_cleaned, by = "fips_code")
+
+cases_hospital_places_anti_join <- anti_join(cases_hospital_anti_join, places_cleaned, by = "fips_code")
+
+cases_hospital_places_vaccination_anti_join <- anti_join(cases_hospital_places_anti_join, vaccination_cleaned, by = "fips_code")
+
+```
+
