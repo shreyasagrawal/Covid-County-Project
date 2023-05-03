@@ -6,7 +6,7 @@ require(readr)
 require(mosaic)
 require(ggplot2)
 require(reshape2)
-
+require(leaps)
 
 # Data prep ----
 hospital <- read_csv("https://www.dropbox.com/s/worwm4rnh8mu7tj/patient-impact-hospital-capacity-cleaned.csv?dl=1") # Processed hospital capacity
@@ -111,15 +111,14 @@ combined[is.na(combined) | combined == "Inf"] = NA
 # new_combined <- na.omit(combined, cols = "CFR")
 
 # Export ----
-write.csv(new_combined, 
-          file = "/Users/cameronlian/Desktop/final-integrated-data.csv", 
+write.csv(combined, 
+          file = "/Users/cameronlian/Library/CloudStorage/Dropbox/Health Crisis Predictive Model Project/final-integrated-data.csv", 
           row.names = FALSE)
 
 # Models ----
 ## Original linear regression model ----
-full_model <- lm(`CFR` ~ ., data = new_combined)
-step_model <- step(new_combined, direction = "both", 
-                   scope = formula(full_lm), trace = 0)
+full_model <- lm(`CFR` ~ ., data = combined)
+step_model
 summary(step_model)
 
 # Calculate percent missing variables ----
