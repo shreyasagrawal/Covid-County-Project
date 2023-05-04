@@ -108,11 +108,11 @@ colnames(combined)
 
 # Change every NA term to generic name NA
 combined[is.na(combined) | combined == "Inf"] = NA
-# new_combined <- na.omit(combined, cols = "CFR")
+new_combined <- na.omit(combined, cols = "CFR")
 
 # Export ----
 write.csv(new_combined, 
-          file = "/Users/cameronlian/Desktop/final-integrated-data.csv", 
+          file = "~/OneDrive - Grinnell College/2022-23/Spring/STA310/project/finalprojectsta310/final-integrated-data.csv", 
           row.names = FALSE)
 
 # Models ----
