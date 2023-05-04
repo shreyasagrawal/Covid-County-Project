@@ -108,11 +108,16 @@ colnames(combined)
 
 # Change every NA term to generic name NA
 combined[is.na(combined) | combined == "Inf"] = NA
-# new_combined <- na.omit(combined, cols = "CFR")
+new_combined <- na.omit(combined, cols = "CFR")
 
 # Export ----
+<<<<<<< HEAD
 write.csv(combined, 
           file = "/Users/cameronlian/Library/CloudStorage/Dropbox/Health Crisis Predictive Model Project/final-integrated-data.csv", 
+=======
+write.csv(new_combined, 
+          file = "~/OneDrive - Grinnell College/2022-23/Spring/STA310/project/finalprojectsta310/final-integrated-data.csv", 
+>>>>>>> 6fd7d45868ec8c33e7f426f070c524e5f362d4d7
           row.names = FALSE)
 
 # Models ----
