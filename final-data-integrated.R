@@ -118,7 +118,7 @@ write.csv(combined,
 # Models ----
 ## Original linear regression model ----
 full_model <- lm(`CFR` ~ ., data = combined)
-step_model
+stepwise_model <- step(full_model)
 summary(step_model)
 
 # Calculate percent missing variables ----
