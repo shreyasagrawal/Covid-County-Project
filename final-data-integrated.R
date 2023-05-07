@@ -110,21 +110,40 @@ colnames(combined)
 combined[is.na(combined) | combined == "Inf"] = NA
 new_combined <- na.omit(combined, cols = "CFR")
 
+# Remove case/death numbers and differences from new_combined
+new_combined$cases <- NULL
+new_combined$deaths <- NULL
+new_combined$diff.cases <- NULL
+new_combined$diff.deaths <- NULL
+
+# Move CFR column to the first 
+new_combined <- new_combined[, c("CFR", 
+                                 setdiff(names(new_combined), 
+                                         "CFR"))]
+
 # Export ----
-<<<<<<< HEAD
-write.csv(combined, 
-          file = "/Users/cameronlian/Library/CloudStorage/Dropbox/Health Crisis Predictive Model Project/final-integrated-data.csv", 
-=======
 write.csv(new_combined, 
-          file = "~/OneDrive - Grinnell College/2022-23/Spring/STA310/project/finalprojectsta310/final-integrated-data.csv", 
->>>>>>> 6fd7d45868ec8c33e7f426f070c524e5f362d4d7
+          file = "/Users/cameronlian/Library/CloudStorage/Dropbox/Health Crisis Predictive Model Project/final-integrated-data.csv", 
           row.names = FALSE)
 
 # Models ----
-## Original linear regression model ----
-full_model <- lm(`CFR` ~ ., data = combined)
-stepwise_model <- step(full_model)
-summary(step_model)
+## Spliting the original data frame into halves
+View(new_combined)
+half <- ncol(new_combined) %/% 2 + 4
+new_combined_1 <- new_combined[, c(1:4, 5:half)]
+new_combined_2 <- new_combined[, c(1:4, (half+1):ncol(new_combined))]
+View(new_combined_1)
+View(new_combined_2)
+
+## Linear regression model ----
+fit_1 <- lm(CFR ~ ., data = new_combined_1)
+fit_2 <- lm(CFR ~ ., data = new_combined_2)
+
+## Stepwise regression model ----
+step_1 <- step(fit_1)
+step_2 <- step(fit_2)
+summary(step_1)
+summary(step_2)
 
 # Calculate percent missing variables ----
 # missing_data <- data.frame(variable = colnames(new.combined), 
