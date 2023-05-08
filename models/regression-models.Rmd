@@ -83,6 +83,9 @@ bs_1 <- regsubsets(data = quarter_1,
 
 summary_bs_1 <- summary(regsubsets.out)
 as.data.frame(summary_bs_1$outmat)
+
+which.max(summary_bs_1$adjr2)
+summary_bs_1$which[13,]
 ```
 
 cor plots
