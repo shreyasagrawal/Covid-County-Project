@@ -9,7 +9,7 @@ output: word_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-```{r}
+```{r, warning=FALSE, message=FALSE}
 # Package prep
 require(tidyr)
 require(dplyr)
@@ -19,9 +19,10 @@ require(mosaic)
 require(ggplot2)
 require(reshape2)
 require(leaps)
+require(lubridate)
 
 # Data prep
-merged_data <- read_csv("https://www.dropbox.com/s/h3c20k7ni3a0zm7/final-integrated-data.csv?dl=1")
+new_combined_2021 <- read_csv("https://www.dropbox.com/s/h3c20k7ni3a0zm7/final-integrated-data.csv?dl=1")
 ```
 
 ## Stepwise regression models
@@ -35,39 +36,45 @@ merged_data <- read_csv("https://www.dropbox.com/s/h3c20k7ni3a0zm7/final-integra
 
 # Splitting into four smaller data frames
 # Determine the number of splits and the size of each split
-n_splits <- 4
-split_size <- (ncol(new_combined_2021) - 4) / n_splits
+n <- ncol(new_combined_2021) - 4
+k <- 4
+cols_per_dataset <- ceiling(n / k)
+datasets <- list()
 
-# Initialize a list to store the resulting dataframes
-df_list <- list()
-
-# Use a loop to split the dataframe into smaller dataframes
-for (i in seq_len(n_splits)) {
-  start_col <- (i - 1) * split_size + 5
-  end_col <- start_col + split_size - 1
-  df_list[[i]] <- cbind(new_combined_2021[,1:4], 
-                        new_combined_2021[,start_col:end_col])
+for (i in seq_len(k)) {
+  start_col <- (i - 1) * cols_per_dataset + 5
+  end_col <- min(i * cols_per_dataset + 4, 
+                 ncol(new_combined_2021))
+  datasets[[i]] <- cbind(new_combined_2021[, 1:4], 
+                         new_combined_2021[, start_col:end_col])
 }
 
 # Splitting the large list into four small ones
-quarter_1 <- df_list[[1]]
-quarter_2 <- df_list[[2]]
-quarter_3 <- df_list[[3]]
-quarter_4 <- df_list[[4]]
+quarter_1 <- datasets[[1]]
+quarter_2 <- datasets[[2]]
+quarter_3 <- datasets[[3]]
+quarter_4 <- datasets[[4]]
+```
 
-# Linear regression models
+### Linear regression models
+```{r}
 fit_1 <- lm(CFR ~ ., data = quarter_1)
 fit_2 <- lm(CFR ~ ., data = quarter_2)
 fit_3 <- lm(CFR ~ ., data = quarter_3)
 fit_4 <- lm(CFR ~ ., data = quarter_4)
+```
 
-# Stepwise regression models
+### Stepwise regression models
+```{r}
 step_1 <- step(fit_1)
 step_2 <- step(fit_2)
 step_3 <- step(fit_3)
 step_4 <- step(fit_4)
+
 summary(step_1)
 summary(step_2)
+summary(step_3)
+summary(step_4)
 ```
 
 ## Best subset regression of 20 variables from stepwise
