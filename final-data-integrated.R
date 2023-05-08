@@ -159,16 +159,15 @@ new_combined_2021 <- subset(new_combined, year_number == 2021)
 View(new_combined_2021)
 
 # Export ----
-write.csv(new_combined, 
-          file = "/Users/cameronlian/Library/CloudStorage/Dropbox/Health Crisis Predictive Model Project/final-integrated-data.csv", 
+write.csv(new_combined_2021, 
+          file = "/Users/cameronlian/Desktop/Covid-County-Project/final-integrated-data.csv", 
           row.names = FALSE)
 
 # Models ----
 ## Spliting the original data frame into halves
-View(new_combined)
-half <- ncol(new_combined) %/% 2 + 4
-new_combined_1 <- new_combined[, c(1:4, 5:half)]
-new_combined_2 <- new_combined[, c(1:4, (half+1):ncol(new_combined))]
+half <- ncol(new_combined_2021) %/% 2 + 4
+new_combined_1 <- new_combined_2021[, c(1:4, 5:half)]
+new_combined_2 <- new_combined_2021[, c(1:4, (half+1):ncol(new_combined_2021))]
 View(new_combined_1)
 View(new_combined_2)
 
