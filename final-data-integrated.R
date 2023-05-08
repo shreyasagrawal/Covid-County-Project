@@ -164,20 +164,45 @@ write.csv(new_combined_2021,
           row.names = FALSE)
 
 # Models ----
-## Spliting the original data frame into halves
+## Splitting the original data frame into halves
 half <- ncol(new_combined_2021) %/% 2 + 4
 new_combined_1 <- new_combined_2021[, c(1:4, 5:half)]
 new_combined_2 <- new_combined_2021[, c(1:4, (half+1):ncol(new_combined_2021))]
 View(new_combined_1)
 View(new_combined_2)
 
+## Splitting into four smaller data frames
+# Determine the number of splits and the size of each split
+n_splits <- 4
+split_size <- (ncol(new_combined_2021) - 4) / n_splits
+
+# Initialize a list to store the resulting dataframes
+df_list <- list()
+
+# Use a loop to split the dataframe into smaller dataframes
+for (i in seq_len(n_splits)) {
+  start_col <- (i - 1) * split_size + 5
+  end_col <- start_col + split_size - 1
+  df_list[[i]] <- cbind(new_combined_2021[,1:4], 
+                        new_combined_2021[,start_col:end_col])
+}
+
+quarter_1 <- df_list[[1]]
+quarter_2 <- df_list[[2]]
+quarter_3 <- df_list[[3]]
+quarter_4 <- df_list[[4]]
+
 ## Linear regression model ----
-fit_1 <- lm(CFR ~ ., data = new_combined_1)
-fit_2 <- lm(CFR ~ ., data = new_combined_2)
+fit_1 <- lm(CFR ~ ., data = quarter_1)
+fit_2 <- lm(CFR ~ ., data = quarter_2)
+fit_3 <- lm(CFR ~ ., data = quarter_3)
+fit_4 <- lm(CFR ~ ., data = quarter_4)
 
 ## Stepwise regression model ----
 step_1 <- step(fit_1)
 step_2 <- step(fit_2)
+step_3 <- step(fit_3)
+step_4 <- step(fit_4)
 summary(step_1)
 summary(step_2)
 
