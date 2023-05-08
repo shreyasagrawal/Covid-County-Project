@@ -68,21 +68,47 @@ new_columns <- data.frame(perc_adult_covid_hospitalized,
 ## Column name change ----
 # COVID data
 colnames(covid)[colnames(covid) == "fips"] <- "fips_code"
+covid$week_number <- gsub("^0([1-9])$", "\\1", covid$week_number)
+covid$fips_code <- ifelse(nchar(covid$fips_code) == 4, 
+                          paste0("0", covid$fips_code), 
+                          covid$fips_code)
 
 # PLACES data
 colnames(places)[colnames(places) == "fips"] <- "fips_code"
 colnames(places)[colnames(places) == "week"] <- "week_number"
 colnames(places)[colnames(places) == "year"] <- "year_number"
+places$week_number <- gsub("^0([1-9])$", "\\1", places$week_number)
+places$fips_code <- ifelse(nchar(places$fips_code) == 4, 
+                          paste0("0", places$fips_code), 
+                          places$fips_code)
 View(places)
 
 # Vaccination data
 colnames(vaccination)[colnames(vaccination) == "FIPS"] <- "fips_code"
 colnames(vaccination)
+# vaccination$week_number <- gsub("^01$", "1", vaccination$week_number)
+# vaccination$week_number <- gsub("^02$", "2", vaccination$week_number)
+# vaccination$week_number <- gsub("^03$", "3", vaccination$week_number)
+# vaccination$week_number <- gsub("^04$", "4", vaccination$week_number)
+# vaccination$week_number <- gsub("^05$", "5", vaccination$week_number)
+# vaccination$week_number <- gsub("^06$", "6", vaccination$week_number)
+# vaccination$week_number <- gsub("^07$", "7", vaccination$week_number)
+# vaccination$week_number <- gsub("^08$", "8", vaccination$week_number)
+# vaccination$week_number <- gsub("^09$", "9", vaccination$week_number)
+vaccination$week_number <- gsub("^0([1-9])$", "\\1", vaccination$week_number)
+vaccination$fips_code <- ifelse(nchar(vaccination$fips_code) == 4, 
+                           paste0("0", vaccination$fips_code), 
+                           vaccination$fips_code)
+View(vaccination)
 
 # Demographic data
 colnames(demographic)[colnames(demographic) == "fips"] <- "fips_code"
 colnames(demographic)[colnames(demographic) == "week"] <- "week_number"
 colnames(demographic)[colnames(demographic) == "year"] <- "year_number"
+demographic$week_number <- gsub("^0([1-9])$", "\\1", demographic$week_number)
+demographic$fips_code <- ifelse(nchar(demographic$fips_code) == 4, 
+                                paste0("0", demographic$fips_code), 
+                                demographic$fips_code)
 demographic$...1 <- NULL
 
 # Economics data
@@ -91,12 +117,21 @@ colnames(economics)[colnames(economics) == "Week"] <- "week_number"
 colnames(economics)[colnames(economics) == "Year"] <- "year_number"
 economics$Geography <- NULL
 economics$`Geographic Area Name` <- NULL
+economics$week_number <- gsub("^0([1-9])$", "\\1", economics$week_number)
+economics$fips_code <- ifelse(nchar(economics$fips_code) == 4, 
+                              paste0("0", economics$fips_code), 
+                              economics$fips_code)
  
 # Hospital data
 colnames(hospital)
 hospital <- hospital[, -c(4:38)]
 combined_hospital <- cbind(hospital, new_columns)
 colnames(combined_hospital)
+combined_hospital$week_number <- gsub("^0([1-9])$", "\\1", 
+                                      combined_hospital$week_number)
+combined_hospital$fips_code <- ifelse(nchar(combined_hospital$fips_code) == 4, 
+                              paste0("0", combined_hospital$fips_code), 
+                              combined_hospital$fips_code)
 
 ## Merging ----
 # by week_number, year_number, and fips_code
@@ -120,6 +155,8 @@ new_combined$diff.deaths <- NULL
 new_combined <- new_combined[, c("CFR", 
                                  setdiff(names(new_combined), 
                                          "CFR"))]
+new_combined_2021 <- subset(new_combined, year_number == 2021)
+View(new_combined_2021)
 
 # Export ----
 write.csv(new_combined, 
