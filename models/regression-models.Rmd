@@ -22,10 +22,10 @@ require(leaps)
 require(lubridate)
 
 # Data prep
-new_combined_2021 <- read_csv("https://www.dropbox.com/s/h3c20k7ni3a0zm7/final-integrated-data.csv?dl=1")
+new_combined_2021 <- read_csv("https://www.dropbox.com/s/2cew3xi59hxblcg/final_merged_data.csv?dl=1")
 ```
 
-## Stepwise regression models
+## Dividing the large dataset
 ```{r}
 # Splitting the original data frame into halves
 # half <- ncol(new_combined_2021) %/% 2 + 4
@@ -56,23 +56,33 @@ quarter_3 <- datasets[[3]]
 quarter_4 <- datasets[[4]]
 ```
 
-### Linear regression models
+## Linear regression models
 ```{r}
 fit_1 <- lm(CFR ~ ., data = quarter_1)
-intercept_1 <- lm(CFR ~ 1, data = quarter_1)
 fit_2 <- lm(CFR ~ ., data = quarter_2)
 fit_3 <- lm(CFR ~ ., data = quarter_3)
 fit_4 <- lm(CFR ~ ., data = quarter_4)
 ```
 
-### Stepwise regression models
+## Stepwise regression models
 ```{r}
-step_1 <- step(fit_1, scale?)
+step_1 <- step(fit_1)
 step_2 <- step(fit_2)
 step_3 <- step(fit_3)
 step_4 <- step(fit_4)
+```
 
-step_1
+## Regression subsets
+```{r}
+bs_1 <- regsubsets(data = quarter_1, 
+                   CFR ~ ., 
+                   nbest = 3, 
+                   nvmax = 20, 
+                   force.in = NULL, force.out = NULL, 
+                   method = "exhaustive")
+
+summary_bs_1 <- summary(regsubsets.out)
+as.data.frame(summary_bs_1$outmat)
 ```
 
 cor plots
