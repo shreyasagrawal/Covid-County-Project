@@ -1,0 +1,144 @@
+---
+title: "final_cases"
+author: "Rosy Bang"
+date: "2023-05-02"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyr)
+library(dplyr)
+library(stringr)
+library(ggplot2)
+library(tidycensus)
+```
+
+```{r}
+hospital <- read.csv("https://www.dropbox.com/s/45ssac4g18zji8j/patient-impact-hospital-capacity-cleaned.csv?dl=1")
+cases <- read.csv("https://www.dropbox.com/s/0ry23w60yu5w3s8/covid-cases-deaths-cleaned.csv?dl=1")
+places <- read.csv("https://www.dropbox.com/s/06fofnx87n4gwrn/places-project-chronic-diseases-cleaned.csv?dl=1")
+vaxx <- read.csv("https://www.dropbox.com/s/ahlkx4oi2qs4556/us_vaccination-cleaned.csv?dl=1")
+econ <- read.csv("https://www.dropbox.com/s/q5nq5oh7rj3dyr9/economic-characteristics-cleaned.csv?dl=1")
+demo <- read.csv("https://www.dropbox.com/s/itmop9r5sxyxr5t/demographic-final.csv?dl=1")
+```
+
+```{r}
+cases <- cases %>%
+  filter(year_number == 2021) %>%
+  filter(week_number != 53) %>%
+  rename("week" = "week_number",
+         "year" = "year_number")
+
+demo <- demo %>%
+  filter(year == 2021) %>%
+  select(-X, -X65.)
+
+econ <- econ %>%
+  filter(Year == 2021) %>%
+  filter(Fips != "raphy") %>%
+  mutate(Fips = str_remove(Fips, "^0"),
+         Fips = as.numeric(Fips)) %>%
+  rename("fips" = "Fips",
+         "week" = "Week",
+         "year" = "Year") %>%
+  rename("name" = "Geographic.Area.Name",
+         "commute" = "Public.Transport.Commutation",
+         "income_below_poverty" = "Household.Income.Below.Poverty.Level.Percentage",
+         "health_insur_coverage" = "Health.Insurance.Coverage.Percentage",
+         "household_income" = "Household.Income.and.Benefits",
+         "edu_health_social_industry" = "Edu.Health.Social.Industry.Percentage",
+         "unemployment_rate" = "Unemployment.Rate") %>%
+  select(-Geography, -Population.16.and.Over, -Estimate.Unemployment)
+
+hospital <- hospital %>%
+  filter(year_number == 2021) %>%
+  filter(week_number != 53) %>%
+  mutate("perc_adult_covid_hospitalized" = total_adult_patients_hospitalized_confirmed_covid_7_day_avg/all_adult_hospital_inpatient_bed_occupied_7_day_avg, # percent of COVID patients among all hospitalized patients
+  "perc_adult_covid_icu" = staffed_icu_adult_patients_confirmed_covid_7_day_avg/staffed_adult_icu_bed_occupancy_7_day_avg, # percent of COVID patients among all ICU patients
+  "all_adult_inpatient_beds_perc_occupied" = inpatient_beds_used_7_day_sum/inpatient_beds_7_day_avg, # percent of occupancy for all inpatient beds
+  "all_adult_inpatient_beds_perc_coverage" = inpatient_beds_7_day_coverage/inpatient_beds_7_day_avg, # percent of coverage for all inpatient beds
+  "covid_all_adult_inpatient_beds_perc_occupied" = total_adult_patients_hospitalized_confirmed_covid_7_day_avg/inpatient_beds_7_day_avg, # percent of occupancy for COVID hospitalized
+  "covid_all_adult_inpatient_beds_perc_coverage" = total_adult_patients_hospitalized_confirmed_covid_7_day_coverage/inpatient_beds_7_day_avg, # percent of staff coverage for COVID hospitalized
+  "all_adult_icu_beds_perc_coverage" = staffed_adult_icu_bed_occupancy_7_day_coverage/total_staffed_adult_icu_beds_7_day_avg, # percent of coverage for all ICU beds
+  "covid_all_adult_icu_beds_perc_occupied" = staffed_icu_adult_patients_confirmed_covid_7_day_avg/total_staffed_adult_icu_beds_7_day_avg, # percent of occupancy among COVID ICU
+  "covid_all_adult_icu_beds_perc_coverage" = staffed_icu_adult_patients_confirmed_covid_7_day_coverage/total_staffed_adult_icu_beds_7_day_avg) %>% # percent of staff coverage among COVID ICU
+  rename("fips" = "fips_code",
+         "week" = "week_number",
+         "year" = "year_number") %>%
+  select(fips, week, year, perc_adult_covid_hospitalized, perc_adult_covid_icu, all_adult_inpatient_beds_perc_occupied, all_adult_inpatient_beds_perc_coverage, covid_all_adult_inpatient_beds_perc_occupied, covid_all_adult_inpatient_beds_perc_coverage, all_adult_icu_beds_perc_coverage, covid_all_adult_icu_beds_perc_occupied, covid_all_adult_icu_beds_perc_coverage)
+
+places <- places %>%
+  filter(year == 2021) %>%
+  select(fips, year, week, binge, bphigh, cancer, casthma, chd, copd, csmoking, diabetes, highchol, lpa, obesity, sleep)
+
+vaxx <- vaxx %>%
+  filter(year_number == 2021) %>%
+  filter(week_number != 53) %>%
+  filter(FIPS != "UNK") %>%
+  mutate(FIPS = str_remove(FIPS, "^0"),
+         FIPS = as.numeric(FIPS)) %>%
+  rename("fips" = "FIPS",
+         "week" = "week_number",
+         "year" = "year_number")
+```
+
+```{r}
+cases_1 <- cases %>%
+  distinct(fips) #3141 counties
+
+demo_1 <- demo %>%
+  mutate("race_total" = white + black + hispanic + native + asian,
+         "sex_total" = male + female) 
+  filter(hispanic == 1) #3221 counties, 3221*52 = 167492 rows
+  
+econ_1 <- econ %>%
+  distinct(fips) #3221 counties, 3221*52 = 167492 rows
+  
+hospital_1 <- hospital %>%
+  distinct(fips) #2471 counties, 2471*52 - 34 - 44 - 24 - 5 - 27 - 2 - 14 - 1 = 128341 rows
+
+# hospital_2 <- hospital %>%
+  # filter(week == 42) %>%
+  # distinct(fips)
+
+# hospital_3 <- hospital %>%
+  # filter(fips == 13257)
+
+# anti_join(hospital_1, hospital_2) 
+# 51105, Lee county, VA (week 35 ~ 52) & 28137, Tate county, MS (week 45 ~ 52) & 28027 (week 1 ~ 4, 29 ~ 52) & 4001 (week 1 ~ 17, 23 ~ 52) & 31021 (week 1 ~ 25) & 29207 (missing weeks 28, 29) & 42131 (week 1 ~ 38) & 13257 (missing week 42)
+
+places_1 <- places %>%
+  distinct(fips) # 3120 counties, 3120*52 = 162240 rows
+
+vaxx_1 <- vaxx %>%
+  distinct(fips) # 3224 counties, 3224*52 = 167648 rows
+```
+
+```{r}
+merge <- inner_join(cases, demo, by = c("fips", "week", "year"))
+merge <- inner_join(merge, econ, by = c("fips", "week", "year"))
+merge <- inner_join(merge, hospital, by = c("fips", "week", "year"))
+merge <- inner_join(merge, places, by = c("fips", "week", "year"))
+merge <- inner_join(merge, vaxx, by = c("fips", "week", "year"))
+
+merge_1 <- merge %>%
+  distinct(fips) # 2416 counties, 2416*52 - 151 = 125481 rows
+
+write.csv(merge, 
+          file = "~/Desktop/final_merged_data.csv", 
+          row.names = FALSE)
+```
+
+```{r}
+merge_left <- left_join(cases, demo, by = c("fips", "week", "year"))
+merge_left <- inner_join(merge_left, econ, by = c("fips", "week", "year"))
+merge_left <- inner_join(merge_left, hospital, by = c("fips", "week", "year"))
+merge_left <- inner_join(merge_left, places, by = c("fips", "week", "year"))
+merge_left <- inner_join(merge_left, vaxx, by = c("fips", "week", "year"))
+```
+
+
