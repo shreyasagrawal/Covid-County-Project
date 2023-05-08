@@ -133,12 +133,4 @@ write.csv(merge,
           row.names = FALSE)
 ```
 
-```{r}
-merge_left <- left_join(cases, demo, by = c("fips", "week", "year"))
-merge_left <- inner_join(merge_left, econ, by = c("fips", "week", "year"))
-merge_left <- inner_join(merge_left, hospital, by = c("fips", "week", "year"))
-merge_left <- inner_join(merge_left, places, by = c("fips", "week", "year"))
-merge_left <- inner_join(merge_left, vaxx, by = c("fips", "week", "year"))
-```
-
 
