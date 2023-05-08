@@ -171,6 +171,13 @@ new_combined_2 <- new_combined_2021[, c(1:4, (half+1):ncol(new_combined_2021))]
 View(new_combined_1)
 View(new_combined_2)
 
+df_list_quarter <- split.default(new_combined_2021[, -c(1:4)], 
+                                 (seq_along(new_combined_2021[,-c(1:4)]) - 1) %/% 
+                                   (ncol(new_combined_2021[,-c(1:4)]) / 4) + 1)
+df_list_quarter <- lapply(df_list_quarter, function(x) 
+  cbind(df[,1:4], x))
+df_list_quarter
+
 ## Linear regression model ----
 fit_1 <- lm(CFR ~ ., data = new_combined_1)
 fit_2 <- lm(CFR ~ ., data = new_combined_2)
