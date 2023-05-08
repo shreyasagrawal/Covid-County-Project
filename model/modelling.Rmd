@@ -1,4 +1,10 @@
 ```{r}
-#something
+merged_data = read.csv("~/OneDrive - Grinnell College/2022-23/Spring/STA310/project/finalprojectsta310/Covid-County-Project/final-integrated-data.csv")
 ```
+
+best subsets on 20 variables
+```{r}
+
+```
+
 
