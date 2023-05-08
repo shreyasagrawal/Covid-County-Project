@@ -59,6 +59,7 @@ quarter_4 <- datasets[[4]]
 ### Linear regression models
 ```{r}
 fit_1 <- lm(CFR ~ ., data = quarter_1)
+intercept_1 <- lm(CFR ~ 1, data = quarter_1)
 fit_2 <- lm(CFR ~ ., data = quarter_2)
 fit_3 <- lm(CFR ~ ., data = quarter_3)
 fit_4 <- lm(CFR ~ ., data = quarter_4)
@@ -66,16 +67,17 @@ fit_4 <- lm(CFR ~ ., data = quarter_4)
 
 ### Stepwise regression models
 ```{r}
-step_1 <- step(fit_1)
+step_1 <- step(fit_1, scale?)
 step_2 <- step(fit_2)
 step_3 <- step(fit_3)
 step_4 <- step(fit_4)
 
-summary(step_1)
-summary(step_2)
-summary(step_3)
-summary(step_4)
+step_1
 ```
+
+cor plots
+
+residual plot
 
 ## Best subset regression of 20 variables from stepwise
 ```{r}
