@@ -162,6 +162,9 @@ View(new_combined_2021)
 write.csv(new_combined_2021, 
           file = "/Users/cameronlian/Desktop/Covid-County-Project/final-integrated-data.csv", 
           row.names = FALSE)
+write.csv(new_combined_2021, 
+          file = "/Users/cameronlian/Library/CloudStorage/Dropbox/Health Crisis Predictive Model Project/final-integrated-data.csv", 
+          row.names = FALSE) # dropbox
 
 # Models ----
 ## Splitting the original data frame into halves
