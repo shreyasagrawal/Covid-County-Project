@@ -34,5 +34,5 @@ half_1 <- cbind(constant, half_1)
 half_2 <- cbind(constant, half_2)
 
 par(mar=c(1,1,1,1))
-pairs(half_1)
-pairs(half_2)
+pairs_1 <- pairs(half_1)
+pairs_2 <- pairs(half_2)

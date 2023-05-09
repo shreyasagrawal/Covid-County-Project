@@ -66,9 +66,10 @@ half_2 <- cbind(constant, half_2)
 ```{r}
 fit_nw <- lm(CFR ~ ., data = df_nw[, -(1:2)])
 step_nw <- stepAIC(fit_nw, direction = "both")
-summary_step <- summary(step_nw)
-summary_step
-View(summary_step$terms)
+step_nw$anova
+stepwise_matrix <- model.matrix(step_nw)
+write.table(stepwise_matrix, 
+            "/Users/cameronlian/Desktop/stepwise-results.csv")
 ```
 
 ## Best subsets for quarter data sets
@@ -158,15 +159,25 @@ bb_summary <- summary(result)
 ```
 
 ## Correlation plots
-```{r, dev = "jpg"}
-plot.new()
+```{r}
+data_clean <- na.omit(df_nw)
+M <- cor(data_clean)
+colnames(M) <- rownames(M) <- as.character(1:38)
+png("/Users/cameronlian/Desktop/corrplot.png", width = 1920, height = 1080)
+corrplot(M, method = "shade", tl.srt = 45, tl.col = "black", tl.cex = 1.5, 
+         cl.cex = 2, cl.ratio = 0.15, cl.offset = 0.5, 
+         addgrid.col = "black", bg = "black")
 dev.off()
 
-data_clean <- na.omit(df_nw)
-corr <- cor(data_clean)
-corrplot(corr, method = "color", type = "upper", order = "hclust", 
-         tl.col = "black", tl.cex = 0.35, tl.srt = 45 ,tl.offset = 0.5, 
-         cl.cex = 0.35, cl.ratio = 0.10, cl.offset = 0.5)
+write.csv(data.frame(colnames(df_nw)),
+          "/Users/cameronlian/Desktop/column_names.csv", 
+          row.names = FALSE)
+
+# plot.new()
+# corrplot(corr, method = "color", type = "upper", order = "hclust", 
+#          # tl.col = "black", tl.cex = 0.35, tl.srt = 45 ,tl.offset = 0.5, 
+#          tl.pos = "n", tl.srt = 90, 
+#          cl.cex = 0.60, cl.ratio = 0.10, cl.offset = 0.5)
 ```
 
 ## Residual plot
