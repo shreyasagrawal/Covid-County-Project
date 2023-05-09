@@ -2,7 +2,7 @@
 title: "Regression Modeling"
 author: "Group Healthcare Crisis"
 date: "`r Sys.Date()`"
-output: word_document
+output: 
 ---
 
 ```{r setup, include=FALSE}
@@ -21,6 +21,9 @@ require(reshape2)
 require(leaps)
 require(lubridate)
 library(corrplot)
+library(leaps)
+library(MASS)
+library(openxlsx)
 
 # Data prep
 new_combined_2021 <- read_csv("https://www.dropbox.com/s/nolym5vik4je3yu/final_merged_data.csv?dl=1")
@@ -37,8 +40,8 @@ new_combined_2021 <- read_csv("https://www.dropbox.com/s/nolym5vik4je3yu/final_m
 # View(new_combined_2)
 
 # Moving CFR to the fourth row
-new_combined_2021 <- new_combined_2021 %>% 
-  select(1:3, CFR, everything())
+# new_combined_2021 <- new_combined_2021 %>% 
+#   select(1:3, CFR, everything())
 
 new_combined_2021$cases <- NULL
 new_combined_2021$deaths <- NULL
@@ -62,9 +65,10 @@ half_2 <- cbind(constant, half_2)
 
 ```{r}
 fit_nw <- lm(CFR ~ ., data = df_nw[, -(1:2)])
-step_nw <- step(fit_nw, direction = "both", 
-                trace = 1)
-summary(step_nw)
+step_nw <- stepAIC(fit_nw, direction = "both")
+summary_step <- summary(step_nw)
+summary_step
+View(summary_step$terms)
 ```
 
 ## Best subsets for quarter data sets
@@ -120,21 +124,49 @@ summary_bs_4$which[numb_predictors_4,]
 
 ## Best subsets for entire data set
 ```{r}
-bs_nw <- regsubsets(data = df_nw,
-                    CFR ~ ., 
-                    nbest = 1, 
-                    nvmax = NULL, 
-                    force.in = NULL, force.out = NULL, 
-                    method = "exhaustive", 
-                    really.big = T)
-summary_bs_nw <- summary(bs_nw)
-as.data.frame(summary_bs_nw$outmat)
+df_nw_clean <- df_nw[complete.cases(df_nw), ]
+
+y <- df_nw_clean$CFR
+x <- df_nw_clean[, c("pop_over_65", "population", "housing_units", "male", "under18", "commute",
+                     "income_below_poverty", "health_insur_coverage", "household_income",
+                     "edu_health_social_industry",
+                     "all_adult_hospital_inpatient_bed_occupied_7_day_avg",
+                     "total_adult_patients_hospitalized_confirmed_covid_7_day_avg",
+                     "staffed_adult_icu_bed_occupancy_7_day_avg",
+                     "binge", "casthma", "chd", "csmoking",
+                     "diabetes", "highchol", "lpa", "obesity", "sleep",
+                     "Completeness_pct", "Administered_Dose1_Pop_Pct",
+                     "Booster_Doses_Vax_Pct",
+                     "Series_Complete_Pop_Pct_SVI")]
+x[] <- lapply(x, as.numeric)
+y[] <- lapply(y, as.numeric)
+
+result <- leaps(x = x, y = y, method = "adjr2", 
+                names = c("pop_over_65", "population", "housing_units", "male", "under18", "commute",
+                     "income_below_poverty", "health_insur_coverage", "household_income",
+                     "edu_health_social_industry",
+                     "all_adult_hospital_inpatient_bed_occupied_7_day_avg",
+                     "total_adult_patients_hospitalized_confirmed_covid_7_day_avg",
+                     "staffed_adult_icu_bed_occupancy_7_day_avg",
+                     "binge", "casthma", "chd", "csmoking",
+                     "diabetes", "highchol", "lpa", "obesity", "sleep",
+                     "Completeness_pct", "Administered_Dose1_Pop_Pct",
+                     "Booster_Doses_Vax_Pct",
+                     "Series_Complete_Pop_Pct_SVI"), 
+                nbest = 3)
+bb_summary <- summary(result)
 ```
 
 ## Correlation plots
+```{r, dev = "jpg"}
+plot.new()
+dev.off()
 
-```{r}
-
+data_clean <- na.omit(df_nw)
+corr <- cor(data_clean)
+corrplot(corr, method = "color", type = "upper", order = "hclust", 
+         tl.col = "black", tl.cex = 0.35, tl.srt = 45 ,tl.offset = 0.5, 
+         cl.cex = 0.35, cl.ratio = 0.10, cl.offset = 0.5)
 ```
 
 ## Residual plot
@@ -142,8 +174,8 @@ as.data.frame(summary_bs_nw$outmat)
 ## Pair plot
 ```{r}
 par(mar=c(1,1,1,1))
-pairs(half_1)
-pairs(half_2)
+pairs_1 <- pairs(half_1)
+paris_2 <- pairs(half_2)
 ```
 
 ## Best subset regression of 20 variables from stepwise
