@@ -43,7 +43,7 @@ library(dplyr)
 
 us.vaccination <- us.vaccination %>%
   group_by(week_number, year_number, FIPS) %>%
-  summarise(across(6:10, sum, na.rm = TRUE))
+  summarise(across(6:10, mean, na.rm = TRUE))
 
 # Change -999999.00 to N/A
 # -999999.00 represents the suppression to the file for sums and averages less 
