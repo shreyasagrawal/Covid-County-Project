@@ -1,0 +1,157 @@
+---
+title: "Regression Modeling"
+author: "Group Healthcare Crisis"
+date: "`r Sys.Date()`"
+output: 
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, warning=FALSE, message=FALSE}
+# Package prep
+require(tidyr)
+require(dplyr)
+require(tibble)
+require(readr)
+require(mosaic)
+require(ggplot2)
+require(reshape2)
+require(leaps)
+require(lubridate)
+library(corrplot)
+library(leaps)
+library(MASS)
+library(openxlsx)
+
+# Data prep
+new_combined_2021 <- read_csv("https://www.dropbox.com/s/nolym5vik4je3yu/final_merged_data.csv?dl=1")
+```
+
+## Dividing the large dataset
+
+```{r}
+# Splitting the original data frame into halves
+# half <- ncol(new_combined_2021) %/% 2 + 4
+# new_combined_1 <- new_combined_2021[, c(1:4, 5:half)]
+# new_combined_2 <- new_combined_2021[, c(1:4, (half+1):ncol(new_combined_2021))]
+# View(new_combined_1)
+# View(new_combined_2)
+
+# Moving CFR to the fourth row
+# new_combined_2021 <- new_combined_2021 %>% 
+#   select(1:3, CFR, everything())
+
+new_combined_2021$cases <- NULL
+new_combined_2021$deaths <- NULL
+new_combined_2021 <- new_combined_2021[, -c(8:11)]
+
+df_nw <- new_combined_2021
+df_nw$white <- NULL # white variable is excluded in df_nw
+View(df_nw)
+
+# Splitting into four smaller data frames
+# Determine the number of splits and the size of each split
+ncol(df_nw)
+constant <- df_nw[3:3]
+half_1 <- df_nw[4:17]
+half_2 <- df_nw[18:38]
+half_1 <- cbind(constant, half_1)
+half_2 <- cbind(constant, half_2)
+```
+
+## Data
+
+```{r}
+data <- read.csv("~/final_merged_data.csv")
+reduced <-data
+reduced <- dplyr::select(data, -c(fips, week, cases, deaths, black, hispanic, native, asian, white))
+```
+
+## Correlation Plot
+
+```{r}
+plot.new()
+dev.off()
+
+data_clean <- na.omit(reduced)
+mycorr <- cor(data_clean)
+corrplot(mycorr, type = "upper", order = "hclust", tl.col = "black", tl.cex = 0.35, method="shade")
+
+
+```
+
+## Pairs Plot
+
+```{r}
+
+ncol(data)
+
+# Set the plot margins to a smaller value
+par(mar = c(0.25, 0.25, 0.25, 0.25))
+
+# Create the pairs plot
+pairs(data[,1:10], main = "Pairs plot of 45 columns of data")
+
+# Create a pairs plot
+pairs(data, main = "Pairs Plot for Covid 2021 Data Set")
+```
+
+
+
+
+## Stepwise regression
+
+```{r}
+
+## Split Data
+half1 <- df_nw[, -(21:38)]
+half2 <- df_nw[, -(4:20)]
+
+
+## First half of data
+
+fit_nw <- lm(CFR ~ ., data = half1[, -(1:2)])
+step_nw <- stepAIC(fit_nw, direction = "forward")
+step_nw$anova
+stepwise_matrix1 <- model.matrix(step_nw)
+summary(step_nw)
+
+## Second Half of Data
+
+fit_nw <- lm(CFR ~ ., data = half2[, -(1:2)])
+step_nw <- stepAIC(fit_nw, direction = "forward")
+step_nw$anova
+stepwise_matrix2 <- model.matrix(step_nw)
+summary(step_nw)
+#write.table(stepwise_matrix, 
+#            "/Users/cameronlian/Desktop/stepwise-results.csv")
+
+library(dplyr)
+
+subsetdf <- dplyr::select(df_nw, CFR, pop_over_65, population, housing_units, male, under18, commute, 
+                    income_below_poverty, health_insur_coverage, household_income, 
+                    edu_health_social_industry, staffed_icu_adult_patients_confirmed_covid_7_day_avg,
+                    cancer, casthma, chd, copd, csmoking, diabetes, highchol, lpa, obesity)
+
+```
+
+## Best Subsets
+
+```{r}
+# perform best subsets regression with up to 3 predictors
+best.lm <- leaps(subsetdf, subsetdf$CFR, method = "adjr2", names = c("pop_over_65", "population", "housing_units", "male", "under18", "commute", 
+                 "income_below_poverty", "health_insur_coverage", "household_income", 
+                    "edu_health_social_industry", "staffed_icu_adult_patients_confirmed_covid_7_day_avg",
+                    "cancer", "casthma", "chd", "copd", "csmoking", "diabetes", "highchol", "lpa", "obesity"), nbest=3)
+
+model <- regsubsets(CFR ~ ., data=subsetdf, nvmax=20)
+
+# summarize the results
+summary(model)
+
+# plot the results
+plot(model, scale="adjr2")
+```
+
