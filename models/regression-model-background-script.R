@@ -8,6 +8,7 @@ require(ggplot2)
 require(reshape2)
 require(leaps)
 require(lubridate)
+library(corrplot)
 
 # Data prep
 new_combined_2021 <- read_csv("https://www.dropbox.com/s/nolym5vik4je3yu/final_merged_data.csv?dl=1")
@@ -33,6 +34,24 @@ quarter_2 <- datasets[[2]]
 quarter_3 <- datasets[[3]]
 quarter_4 <- datasets[[4]]
 
+# Stepwise regression models
+
+fit_1 <- lm(CFR ~ ., data = quarter_1)
+fit_2 <- lm(CFR ~ ., data = quarter_2)
+fit_3 <- lm(CFR ~ ., data = quarter_3)
+fit_4 <- lm(CFR ~ ., data = quarter_4)
+
+step_1 <- step(fit_1)
+step_2 <- step(fit_2)
+step_3 <- step(fit_3)
+step_4 <- step(fit_4)
+
+step_1
+step_2
+step_3
+step_4
+
+# Best subset regression models
 bs_1 <- regsubsets(data = quarter_1, 
                    CFR ~ ., 
                    nbest = 1, 
