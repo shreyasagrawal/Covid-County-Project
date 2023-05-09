@@ -22,7 +22,7 @@ require(leaps)
 require(lubridate)
 
 # Data prep
-new_combined_2021 <- read_csv("https://www.dropbox.com/s/2cew3xi59hxblcg/final_merged_data.csv?dl=1")
+new_combined_2021 <- read_csv("https://www.dropbox.com/s/nolym5vik4je3yu/final_merged_data.csv?dl=1")
 ```
 
 ## Dividing the large dataset
@@ -33,6 +33,10 @@ new_combined_2021 <- read_csv("https://www.dropbox.com/s/2cew3xi59hxblcg/final_m
 # new_combined_2 <- new_combined_2021[, c(1:4, (half+1):ncol(new_combined_2021))]
 # View(new_combined_1)
 # View(new_combined_2)
+
+# Moving CFR to the fourth row
+new_combined_2021 <- new_combined_2021 %>% 
+  select(1:3, CFR, everything())
 
 # Splitting into four smaller data frames
 # Determine the number of splits and the size of each split
@@ -75,17 +79,60 @@ step_4 <- step(fit_4)
 ## Regression subsets
 ```{r}
 bs_1 <- regsubsets(data = quarter_1, 
-                   CFR ~ ., 
-                   nbest = 3, 
-                   nvmax = 20, 
-                   force.in = NULL, force.out = NULL, 
-                   method = "exhaustive")
+                          CFR ~ ., 
+                          nbest = 1, 
+                          nvmax = NULL, 
+                          force.in = NULL, force.out = NULL, 
+                          method = "exhaustive", 
+                   really.big = T)
 
-summary_bs_1 <- summary(regsubsets.out)
+summary_bs_1 <- summary(bs_1)
 as.data.frame(summary_bs_1$outmat)
 
-which.max(summary_bs_1$adjr2)
-summary_bs_1$which[13,]
+numb_predictors <- which.max(summary_bs_1$adjr2)
+summary_bs_1$which[numb_predictors,]
+
+bs_2 <- regsubsets(data = quarter_2, 
+                          CFR ~ ., 
+                          nbest = 1, 
+                          nvmax = NULL, 
+                          force.in = NULL, force.out = NULL, 
+                          method = "exhaustive", 
+                   really.big = T)
+
+summary_bs_2 <- summary(bs_2)
+as.data.frame(summary_bs_2$outmat)
+
+numb_predictors <- which.max(summary_bs_2$adjr2)
+summary_bs_2$which[numb_predictors,]
+
+bs_3 <- regsubsets(data = quarter_3, 
+                          CFR ~ ., 
+                          nbest = 1, 
+                          nvmax = NULL, 
+                          force.in = NULL, force.out = NULL, 
+                          method = "exhaustive", 
+                   really.big = T)
+
+summary_bs_3 <- summary(bs_3)
+as.data.frame(summary_bs_3$outmat)
+
+numb_predictors <- which.max(summary_bs_3$adjr2)
+summary_bs_3$which[numb_predictors,]
+
+bs_4 <- regsubsets(data = quarter_4, 
+                          CFR ~ ., 
+                          nbest = 1, 
+                          nvmax = NULL, 
+                          force.in = NULL, force.out = NULL, 
+                          method = "exhaustive", 
+                   really.big = T)
+
+summary_bs_4 <- summary(bs_4)
+as.data.frame(summary_bs_4$outmat)
+numb_predictors <- which.max(summary_bs_4$adjr2)
+
+summary_bs_4$which[numb_predictors,]
 ```
 
 cor plots
