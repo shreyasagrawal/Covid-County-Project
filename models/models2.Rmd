@@ -31,7 +31,7 @@ data <- read_csv("https://www.dropbox.com/s/nolym5vik4je3yu/final_merged_data.cs
 ## Data
 
 ```{r}
-reduced <-data
+reduced <- data
 reduced <- dplyr::select(data, -c(fips, week, cases, deaths, black, hispanic, native, asian, white))
 ```
 
@@ -48,10 +48,18 @@ data_clean_without_CFR <- na.omit(reduced[, !colnames(reduced) %in% "CFR"])
 mycorr <- cor(data_clean_without_CFR)
 
 # Plot the correlation matrix
-corrplot(mycorr, type = "upper", order = "hclust", tl.col = "black", tl.cex = 0.45, method="shade")
+# corrplot(mycorr, type = "upper", order = "hclust", tl.col = "black", tl.cex = 0.45, method="shade")
+colnames(mycorr) <- rownames(mycorr) <- as.character(1:35)
+png("/Users/cameronlian/Desktop/corrplot.png", width = 1920, height = 1080)
+corrplot(mycorr, type = "upper", method = "shade", 
+         tl.srt = 45, tl.col = "black", tl.cex = 1.5, 
+         cl.cex = 2, cl.ratio = 0.15, cl.offset = 0.5, 
+         addgrid.col = "black", bg = "black")
+dev.off()
 
-
-
+write.csv(data.frame(colnames(data_clean_without_CFR)),
+          "/Users/cameronlian/Desktop/column_names.csv", 
+          row.names = FALSE)
 ```
 
 ## Pairs Plot
@@ -75,10 +83,15 @@ pairs(data, main = "Pairs Plot for Covid 2021 Data Set")
 ## Subset regression
 
 ```{r}
-
 ## Dividing the large dataset
-half1 <- data_clean[, -(19:36)]
-half2 <- data_clean[, -(2:18)]
+half1 <- data_clean_without_CFR[, 1:17]
+half1 <- cbind(data_clean$CFR, half1)
+colnames(half1)[colnames(half1) == "data_clean$CFR"] <- "CFR"
+
+half2 <- data_clean_without_CFR[, 18:ncol(data_clean_without_CFR)]
+half2 <- cbind(data_clean$CFR, half2)
+colnames(half2)[colnames(half2) == "data_clean$CFR"] <- "CFR"
+
 
 # Load the "leaps" package
 library(leaps)
@@ -105,7 +118,11 @@ summary(best_subsets2, rsq = TRUE)
 ```
 
 ```{r}
-plot(best_subsets1, scale="adjr2")
+require(stringr)
+
+png("/Users/cameronlian/Desktop/best-subsets1.png", width = 1920, height = 1080)
+par(mar = c(10, 2, 2, 1))
+plot(best_subsets1, scale = "adjr2")
 "pop_over_65"
 "under18"
 "commute"
@@ -115,7 +132,8 @@ plot(best_subsets1, scale="adjr2")
 "income_below_poverty"
 "total_staffed_adult_icu_beds_7_day_avg"
 
-plot(best_subsets2, scale="adjr2")
+# png("/Users/cameronlian/Desktop/best-subsets2.png", width = 1920, height = 1080)
+plot(best_subsets2, scale = "adjr2")
 "staffed_icu_adult_patients_confirmed_covid_7_day_avg"
 "binge"
 "casthma"
