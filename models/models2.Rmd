@@ -1,6 +1,6 @@
 ---
 title: "Regression Modeling"
-author: "Group Healthcare Crisis"
+author: "Group Healthcare Crisis: Shrey, Cameron, Yoel"
 date: "`r Sys.Date()`"
 output: 
 ---
