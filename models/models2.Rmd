@@ -157,8 +157,8 @@ plot(best_subsets3, scale="r2", las=2)
 mtext("Final Best Subsets", outer=TRUE, line=0.5, cex=1.2)
 ```
 
-```{r}
 ## Final Subset Model
+```{r}
 finalhalf <- dplyr::select(reduced, CFR, staffed_icu_adult_patients_confirmed_covid_7_day_avg, binge, casthma, chd, csmoking, diabetes, lpa, obesity, Administered_Dose1_Pop_Pct, pop_over_65, under18, commute, health_insur_coverage, household_income, male, income_below_poverty, total_staffed_adult_icu_beds_7_day_avg)
     
 #best_subsets3 <- regsubsets(CFR ~ ., data = finalhalf, nvmax = ncol(half1)-1, method = "exhaustive")
@@ -169,8 +169,6 @@ regfin <- dplyr::select(reduced, CFR, staffed_icu_adult_patients_confirmed_covid
 
 reg1 <- lm(CFR ~., data = regfin)
 summary(reg1)
-
-
 ```
 
 #resid plots
@@ -182,9 +180,8 @@ for(i in 2:length(names(reg1$model))) {
     # Add a horizontal line at y=0
   abline(h = 0, col = "red")
 }
-
-
 ```
+## npp
 ```{r}
 dev.new(width=12, height=16)
 par(mfrow=c(5, 4), mar=c(2, 2, 2, 2))
@@ -192,9 +189,8 @@ for(i in 2:length(names(reg1$model))) {
   qqnorm(reg1$model[,i], main=paste("Normal Probability Plot of", names(reg1$model)[i]))
   qqline(reg1$model[,i])
 }
-
-
 ```
+# DOING LOG TRANSFORMATION ON VARIABLES WITH FUNNELL SHAPED RESID PLOTS
 ```{r}
 # Load the necessary libraries
 library(dplyr)
@@ -213,9 +209,8 @@ reg2 <- lm(CFR ~ binge + chd + csmoking + diabetes + lpa + male + pop_over_65 + 
 
 # Print the summary of the new regression model
 summary(reg2)
-
-
 ```
+# RESID AFTER LOG
 ```{r}
 dev.new(width=12, height=16)
 par(mfrow=c(5, 4), mar=c(2, 2, 2, 2))
@@ -225,6 +220,7 @@ for(i in 2:length(names(reg2$model))) {
   abline(h = 0, col = "red")
 }
 ```
+#Npp PLOTS AFTER
 ```{r}
 dev.new(width=12, height=16)
 par(mfrow=c(5, 4), mar=c(2, 2, 2, 2))
@@ -232,6 +228,46 @@ for(i in 2:length(names(reg2$model))) {
   qqnorm(reg2$model[,i], main=paste("Normal Probability Plot of", names(reg2$model)[i]))
   qqline(reg2$model[,i])
 }
+
+```
+
+## VIF
+```{r}
+# Load the car and ggplot2 packages
+library(car)
+library(ggplot2)
+
+# Fit a linear regression model using all predictor variables in the data frame
+model <- lm(CFR ~ ., data = regfin)
+summary(model)
+
+# Calculate the VIF for each predictor variable
+vif_values <- vif(model)
+
+# Create a data frame with the predictor variable names and VIF values
+df_vif <- data.frame(predictor = names(vif_values), vif = vif_values)
+
+# Create a bar plot of the VIF values
+ggplot(data = df_vif, 
+       mapping = aes(x = predictor, 
+                     y = vif)) +
+  geom_col() +
+  geom_hline(yintercept = 5, lty = 2, lwd = 2) +
+  scale_x_discrete(guide = guide_axis(check.overlap = TRUE, 
+                                      n.dodge = 3)) +
+  ylab("Variance inflation factor (VIF)") +
+  theme(axis.text = element_text(size = rel(1.7)), 
+        axis.title = element_text(size = rel(2)), 
+        axis.title.x = element_text(margin = margin(t = 10)), 
+        axis.title.y = element_text(vjust = 1.5))
+
+regfin <- dplyr::select(reduced, CFR, staffed_icu_adult_patients_confirmed_covid_7_day_avg, binge, chd, csmoking, diabetes, lpa, pop_over_65, under18, commute, health_insur_coverage, male)
+
+lm_vif <- lm(CFR ~., data = vif_clean)
+summary(lm_vif)
+
+reg_vif <- lm(CFR ~., data = vif_clean)
+summary(reg_vif)
 
 ```
 
