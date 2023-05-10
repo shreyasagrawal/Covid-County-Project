@@ -178,7 +178,59 @@ summary(reg1)
 dev.new(width=12, height=16)
 par(mfrow=c(5, 4), mar=c(2, 2, 2, 2))
 for(i in 2:length(names(reg1$model))) {
-  plot(reg1$model[,i], resid(reg1), xlab=paste("Residuals vs.", names(reg1$model)[i]), ylab="Residuals")
+  plot(reg1$model[,i], resid(reg1), main=paste("Residuals vs.", names(reg1$model)[i]), ylab="Residuals")
+    # Add a horizontal line at y=0
+  abline(h = 0, col = "red")
+}
+
+
+```
+```{r}
+dev.new(width=12, height=16)
+par(mfrow=c(5, 4), mar=c(2, 2, 2, 2))
+for(i in 2:length(names(reg1$model))) {
+  qqnorm(reg1$model[,i], main=paste("Normal Probability Plot of", names(reg1$model)[i]))
+  qqline(reg1$model[,i])
+}
+
+
+```
+```{r}
+# Load the necessary libraries
+library(dplyr)
+
+# Remove NAs and zeroes from commute and staffed_icu_adult_patients_confirmed_covid_7_day_avg
+regfin2 <- regfin %>%
+  filter(commute > 0 & !is.na(commute)) %>%
+  filter(staffed_icu_adult_patients_confirmed_covid_7_day_avg > 0 & !is.na(staffed_icu_adult_patients_confirmed_covid_7_day_avg))
+
+# Take the log of commute and staffed_icu_adult_patients_confirmed_covid_7_day_avg
+regfin2$log_commute <- log(regfin2$commute)
+regfin2$log_staffed_icu <- log(regfin2$staffed_icu_adult_patients_confirmed_covid_7_day_avg)
+
+# Create the new linear regression model with the logged variables
+reg2 <- lm(CFR ~ binge + chd + csmoking + diabetes + lpa + male + pop_over_65 + under18 + health_insur_coverage + log_commute + log_staffed_icu, data = regfin2)
+
+# Print the summary of the new regression model
+summary(reg2)
+
+
+```
+```{r}
+dev.new(width=12, height=16)
+par(mfrow=c(5, 4), mar=c(2, 2, 2, 2))
+for(i in 2:length(names(reg2$model))) {
+  plot(reg2$model[,i], resid(reg2), main=paste("Residuals vs.", names(reg2$model)[i]), ylab="Residuals")
+    # Add a horizontal line at y=0
+  abline(h = 0, col = "red")
+}
+```
+```{r}
+dev.new(width=12, height=16)
+par(mfrow=c(5, 4), mar=c(2, 2, 2, 2))
+for(i in 2:length(names(reg2$model))) {
+  qqnorm(reg2$model[,i], main=paste("Normal Probability Plot of", names(reg2$model)[i]))
+  qqline(reg2$model[,i])
 }
 
 ```
