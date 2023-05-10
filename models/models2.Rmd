@@ -179,3 +179,11 @@ summary(model)
 plot(model, scale="adjr2")
 ```
 
+## Variance inflation factor (VIF)
+```{r}
+require(dplyr)
+new_data <- data_clean %>% 
+  select(CFR, staffed_icu_adult_patients_confirmed_covid_7_day_avg, 
+         binge, chd, csmoking, diabetes, lpa, pop_over_65, under18, 
+         commute, health_insur_coverage, male)
+```
