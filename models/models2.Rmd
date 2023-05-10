@@ -31,7 +31,7 @@ data <- read_csv("https://www.dropbox.com/s/nolym5vik4je3yu/final_merged_data.cs
 ## Data
 
 ```{r}
-reduced <- data
+reduced <-data
 reduced <- dplyr::select(data, -c(fips, week, cases, deaths, black, hispanic, native, asian, white))
 ```
 
@@ -48,18 +48,10 @@ data_clean_without_CFR <- na.omit(reduced[, !colnames(reduced) %in% "CFR"])
 mycorr <- cor(data_clean_without_CFR)
 
 # Plot the correlation matrix
-# corrplot(mycorr, type = "upper", order = "hclust", tl.col = "black", tl.cex = 0.45, method="shade")
-colnames(mycorr) <- rownames(mycorr) <- as.character(1:35)
-png("/Users/cameronlian/Desktop/corrplot.png", width = 1920, height = 1080)
-corrplot(mycorr, type = "upper", method = "shade", 
-         tl.srt = 45, tl.col = "black", tl.cex = 1.5, 
-         cl.cex = 2, cl.ratio = 0.15, cl.offset = 0.5, 
-         addgrid.col = "black", bg = "black")
-dev.off()
+corrplot(mycorr, type = "upper", order = "hclust", tl.col = "black", tl.cex = 0.45, method="shade")
 
-write.csv(data.frame(colnames(data_clean_without_CFR)),
-          "/Users/cameronlian/Desktop/column_names.csv", 
-          row.names = FALSE)
+
+
 ```
 
 ## Pairs Plot
@@ -80,18 +72,11 @@ pairs(data, main = "Pairs Plot for Covid 2021 Data Set")
 
 
 
-## Subset regression
-
+## Best subsets
 ```{r}
 ## Dividing the large dataset
-half1 <- data_clean_without_CFR[, 1:17]
-half1 <- cbind(data_clean$CFR, half1)
-colnames(half1)[colnames(half1) == "data_clean$CFR"] <- "CFR"
-
-half2 <- data_clean_without_CFR[, 18:ncol(data_clean_without_CFR)]
-half2 <- cbind(data_clean$CFR, half2)
-colnames(half2)[colnames(half2) == "data_clean$CFR"] <- "CFR"
-
+half1 <- reduced[, -(19:36)]
+half2 <- reduced[, -(2:18)]
 
 # Load the "leaps" package
 library(leaps)
@@ -103,26 +88,20 @@ summary(best_subsets1, rsq = TRUE)
 # Perform best subsets regression on dataset 2
 best_subsets2 <- regsubsets(CFR ~ ., data = half2, nvmax = ncol(half2)-1, method = "exhaustive")
 summary(best_subsets2, rsq = TRUE)
-
-#best_1.lm = leaps(half1,half1$CFR, method = 'adjr2', names = names(half1), nbest = 3)
-
-
-
-#library(dplyr)
-
-#subsetdf <- dplyr::select(df_nw, CFR, pop_over_65, population, housing_units, male, under18, commute, 
- #                   income_below_poverty, health_insur_coverage, household_income, 
-  #                  edu_health_social_industry, staffed_icu_adult_patients_confirmed_covid_7_day_avg,
-   #                 cancer, casthma, chd, copd, csmoking, diabetes, highchol, lpa, obesity)
-
 ```
+## Best Subsets - 1st half plot
 
 ```{r}
-require(stringr)
+# Set plot size and margins
+par(fig=c(0, 1, 0, 1), mar=c(5, 4, 8, 2) + 0.1, oma=c(0, 0, 2, 0), cex.axis=0.8, cex.lab=0.8)
+par(fig=c(0, 1, 0.35, 1), new=TRUE)
 
-png("/Users/cameronlian/Desktop/best-subsets1.png", width = 1920, height = 1080)
-par(mar = c(10, 2, 2, 1))
-plot(best_subsets1, scale = "adjr2")
+# Plot the best subsets
+plot(best_subsets1, scale="r2", las=2)
+
+# Add a title and adjust the outer margin
+mtext("1st half", outer=TRUE, line=0.5, cex=1.2)
+
 "pop_over_65"
 "under18"
 "commute"
@@ -132,8 +111,23 @@ plot(best_subsets1, scale = "adjr2")
 "income_below_poverty"
 "total_staffed_adult_icu_beds_7_day_avg"
 
-# png("/Users/cameronlian/Desktop/best-subsets2.png", width = 1920, height = 1080)
-plot(best_subsets2, scale = "adjr2")
+# Set plot size and margins
+par(fig=c(0, 1, 0, 1), mar=c(5, 4, 8, 2) + 0.1, oma=c(0, 0, 2, 0), cex.axis=0.8, cex.lab=0.8)
+par(fig=c(0, 1, 0.35, 1), new=TRUE)
+
+```
+## Best Subsets - 2nd half plot
+
+```{r}
+# Set plot size and margins
+par(fig=c(0, 1, 0, 1), mar=c(5, 4, 8, 2) + 0.1, oma=c(0, 0, 2, 0), cex.axis=0.8, cex.lab=0.8)
+par(fig=c(0, 1, 0.3, 1), new=TRUE)
+
+# Plot the best subsets
+plot(best_subsets2, scale="r2", las=2)
+
+# Add a title and adjust the outer margin
+mtext("2nd half", outer=TRUE, line=0.5, cex=1.2)
 "staffed_icu_adult_patients_confirmed_covid_7_day_avg"
 "binge"
 "casthma"
@@ -143,47 +137,49 @@ plot(best_subsets2, scale = "adjr2")
 "lpa"
 "obesity"
 "Administered_Dose1_Pop_Pct"
+```
+## Best Subsets - final
 
+```{r}
+finalhalf <- dplyr::select(reduced, CFR, staffed_icu_adult_patients_confirmed_covid_7_day_avg, binge, casthma, chd, csmoking, diabetes, lpa, obesity, Administered_Dose1_Pop_Pct, pop_over_65, under18, commute, health_insur_coverage, household_income, male, income_below_poverty, total_staffed_adult_icu_beds_7_day_avg)
+    
+best_subsets3 <- regsubsets(CFR ~ ., data = finalhalf, nvmax = ncol(half1)-1, method = "exhaustive")
+summary(best_subsets1, rsq = TRUE)
+
+# Set plot size and margins
+par(fig=c(0, 1, 0, 1), mar=c(5, 4, 8, 2) + 0.1, oma=c(0, 0, 2, 0), cex.axis=0.8, cex.lab=0.8)
+par(fig=c(0, 1, 0.25, 1), new=TRUE)
+
+# Plot the best subsets
+plot(best_subsets3, scale="r2", las=2)
+
+# Add a title and adjust the outer margin
+mtext("Final Best Subsets", outer=TRUE, line=0.5, cex=1.2)
 ```
 
 ```{r}
-# Plot the R-squared values for dataset 1
-plot(best_subsets1$rsq, xlab = "Number of predictors", ylab = "R-squared", main = "Best subsets regression for dataset 1")
+## Final Subset Model
+finalhalf <- dplyr::select(reduced, CFR, staffed_icu_adult_patients_confirmed_covid_7_day_avg, binge, casthma, chd, csmoking, diabetes, lpa, obesity, Administered_Dose1_Pop_Pct, pop_over_65, under18, commute, health_insur_coverage, household_income, male, income_below_poverty, total_staffed_adult_icu_beds_7_day_avg)
+    
+#best_subsets3 <- regsubsets(CFR ~ ., data = finalhalf, nvmax = ncol(half1)-1, method = "exhaustive")
+#summary(best_subsets1, rsq = TRUE)
+#plot(best_subsets3, scale="adjr2")
 
-# Add text labels for the best models
-text(which.max(best_subsets1$rsq), max(best_subsets1$rsq), paste0("Best model: ", which.max(best_subsets1$rsq), " predictors"))
+regfin <- dplyr::select(reduced, CFR, staffed_icu_adult_patients_confirmed_covid_7_day_avg, binge, chd, csmoking, diabetes, lpa, pop_over_65, under18, commute, health_insur_coverage, male)
 
-# Plot the R-squared values for dataset 2
-plot(best_subsets2$rsq, xlab = "Number of predictors", ylab = "R-squared", main = "Best subsets regression for dataset 2")
+reg1 <- lm(CFR ~., data = regfin)
+summary(reg1)
 
-# Add text labels for the best models
-text(which.max(best_subsets2$rsq), max(best_subsets2$rsq), paste0("Best model: ", which.max(best_subsets2$rsq), " predictors"))
 
 ```
 
-## Best Subsets
-
+#resid plots
 ```{r}
-# perform best subsets regression with up to 3 predictors
-best.lm <- leaps(subsetdf, subsetdf$CFR, method = "adjr2", names = c("pop_over_65", "population", "housing_units", "male", "under18", "commute", 
-                 "income_below_poverty", "health_insur_coverage", "household_income", 
-                    "edu_health_social_industry", "staffed_icu_adult_patients_confirmed_covid_7_day_avg",
-                    "cancer", "casthma", "chd", "copd", "csmoking", "diabetes", "highchol", "lpa", "obesity"), nbest=3)
+dev.new(width=12, height=16)
+par(mfrow=c(5, 4), mar=c(2, 2, 2, 2))
+for(i in 2:length(names(reg1$model))) {
+  plot(reg1$model[,i], resid(reg1), xlab=paste("Residuals vs.", names(reg1$model)[i]), ylab="Residuals")
+}
 
-model <- regsubsets(CFR ~ ., data=subsetdf, nvmax=20)
-
-# summarize the results
-summary(model)
-
-# plot the results
-plot(model, scale="adjr2")
 ```
 
-## Variance inflation factor (VIF)
-```{r}
-require(dplyr)
-new_data <- data_clean %>% 
-  select(CFR, staffed_icu_adult_patients_confirmed_covid_7_day_avg, 
-         binge, chd, csmoking, diabetes, lpa, pop_over_65, under18, 
-         commute, health_insur_coverage, male)
-```
