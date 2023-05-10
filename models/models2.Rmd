@@ -57,7 +57,6 @@ corrplot(mycorr, type = "upper", order = "hclust", tl.col = "black", tl.cex = 0.
 ## Pairs Plot
 
 ```{r}
-
 ncol(data)
 
 # Set the plot margins to a smaller value
