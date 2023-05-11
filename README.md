@@ -1,7 +1,7 @@
 # Covid-County-Project
-# Covid-County-Project
+# Formatted version in Latest Project document
 
-●	Datasets Dropbox: https://www.dropbox.com/scl/fo/6i2dcck84cdhwylavss69/h?dl=0&rlkey=upj9bty4q30cq3q6eb7ho7wdv
+Datasets Dropbox: https://www.dropbox.com/scl/fo/6i2dcck84cdhwylavss69/h?dl=0&rlkey=upj9bty4q30cq3q6eb7ho7wdv
 
 Question: What are the key variables that predict the COVID-19 mortality rate by FIPS code? Is race a significant predictor of CFR?
 Methods: Multiple linear regression and best subsets models
@@ -138,8 +138,4 @@ Booster_Doses_Vax_Pct	Percent of people who completed a primary series and have 
 Booster_Doses_65Plus	Total number of people ages 65+ who completed a primary series and have received a booster (or additional) dose.	Number
 Booster_Doses_65Plus_Vax_Pct	Percent of people ages 65+ who completed a primary series and have received a booster (or additional) dose.	Number
 Second_Booster_65Plus	Total number of people ages 65+ who have received a second booster dose.	Plain Text
-Second_Booster_65Plus_Vax_Pct	Percentage of people ages 65+ with a first booster dose who received a second booster dose.	Plain Text
-
-
-
-![image](https://github.com/shreyasagrawal/Covid-County-Project/assets/132799430/b931d83c-2b5e-409b-a0ab-efdb2e420224)
+Second_Booster_65Plus_Vax_Pct	Percentage of people ages 65+ with a first booster dose who received a second booster dose.
