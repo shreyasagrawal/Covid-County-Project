@@ -37,22 +37,22 @@ reduced <- dplyr::select(data, -c(fips, week, cases, deaths, black, hispanic, na
 
 ## Correlation Plot
 
-```{r}
-plot.new()
-dev.off()
-
-# Select all columns except "CFR"
-data_clean_without_CFR <- na.omit(reduced[, !colnames(reduced) %in% "CFR"])
-
-# Compute the correlation matrix
-mycorr <- cor(data_clean_without_CFR)
-
-# Plot the correlation matrix
-corrplot(mycorr, type = "upper", order = "hclust", tl.col = "black", tl.cex = 0.45, method="shade")
-
-
-
-```
+# ```{r}
+# plot.new()
+# dev.off()
+# 
+# # Select all columns except "CFR"
+# data_clean_without_CFR <- na.omit(reduced[, !colnames(reduced) %in% "CFR"])
+# 
+# # Compute the correlation matrix
+# mycorr <- cor(data_clean_without_CFR)
+# 
+# # Plot the correlation matrix
+# corrplot(mycorr, type = "upper", order = "hclust", tl.col = "black", tl.cex = 0.45, method="shade")
+# 
+# 
+# 
+# ```
 
 ## Pairs Plot
 
@@ -169,8 +169,6 @@ regfin <- dplyr::select(reduced, CFR, staffed_icu_adult_patients_confirmed_covid
 
 reg1 <- lm(CFR ~., data = regfin)
 summary(reg1)
-
-
 ```
 
 #resid plots
@@ -181,5 +179,52 @@ for(i in 2:length(names(reg1$model))) {
   plot(reg1$model[,i], resid(reg1), xlab=paste("Residuals vs.", names(reg1$model)[i]), ylab="Residuals")
 }
 
+```
+
+## VIF
+```{r}
+# Load the car and ggplot2 packages
+library(car)
+library(ggplot2)
+
+# Fit a linear regression model using all predictor variables in the data frame
+model <- lm(CFR ~ ., data = regfin)
+summary(model)
+
+# Calculate the VIF for each predictor variable
+vif_values <- vif(model)
+
+# Create a data frame with the predictor variable names and VIF values
+df_vif <- data.frame(predictor = names(vif_values), vif = vif_values)
+
+# Create a bar plot of the VIF values
+png("/Users/cameronlian/Desktop/vif_plot.png", 
+    width = 1920, height = 1080)
+ggplot(data = df_vif, 
+       mapping = aes(x = predictor, 
+                     y = vif)) +
+  geom_col() +
+  geom_hline(yintercept = 5, lty = 2, lwd = 2) +
+  scale_x_discrete(guide = guide_axis(check.overlap = TRUE, 
+                                      n.dodge = 3)) +
+  ylab("Variance inflation factor (VIF)") +
+  theme(axis.text = element_text(size = rel(1.7)), 
+        axis.title = element_text(size = rel(2)), 
+        axis.title.x = element_text(margin = margin(t = 10)), 
+        axis.title.y = element_text(vjust = 1.5))
+
+regfin <- dplyr::select(reduced, CFR, staffed_icu_adult_patients_confirmed_covid_7_day_avg, binge, chd, csmoking, diabetes, lpa, pop_over_65, under18, commute, health_insur_coverage, male)
+
+vif_clean <- dplyr::select(reduced, CFR, staffed_icu_adult_patients_confirmed_covid_7_day_avg, binge, pop_over_65, chd, csmoking, diabetes)
+vif_removed <- dplyr::select(reduced, CFR, chd, csmoking, diabetes, health_insur_coverage, lpa, under18)
+best_subsets_vif <- step(CFR ~ ., data = vif_removed, 
+                               nvmax = ncol(half1)-1, method = "exhaustive")
+summary(best_subsets_vif, rsq = TRUE)
+plot(best_subsets_vif, scale="r2", las=2)
+lm_vif <- lm(CFR ~., data = vif_clean)
+summary(lm_vif)
+
+reg_vif <- lm(CFR ~., data = vif_clean)
+summary(reg_vif)
 ```
 
