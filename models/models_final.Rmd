@@ -1,0 +1,305 @@
+---
+title: "Regression Modeling"
+author: "Group Healthcare Crisis: Shrey, Cameron, Yoel"
+date: "`r Sys.Date()`"
+output: 
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, warning=FALSE, message=FALSE}
+# Package prep
+require(tidyr)
+require(dplyr)
+require(tibble)
+require(readr)
+require(mosaic)
+require(ggplot2)
+require(reshape2)
+require(leaps)
+require(lubridate)
+library(corrplot)
+library(leaps)
+library(MASS)
+library(openxlsx)
+
+# Data prep
+data <- read_csv("~/0511_merged.csv")
+```
+## Data
+
+```{r}
+reduced <-data
+reduced <- dplyr::select(data, -c(fips, week, cases, deaths, black, hispanic, native, asian, white))
+```
+
+## Correlation Plot
+
+```{r}
+plot.new()
+dev.off()
+
+# Select all columns except "CFR"
+data_clean_without_CFR <- na.omit(reduced[, !colnames(reduced) %in% "CFR"])
+
+# Compute the correlation matrix
+mycorr <- cor(data_clean_without_CFR)
+
+# Plot the correlation matrix
+corrplot(mycorr, type = "upper", order = "hclust", tl.col = "black", tl.cex = 0.45, method="shade")
+
+
+
+```
+
+## Pairs Plot
+
+```{r}
+ncol(data)
+
+# Set the plot margins to a smaller value
+par(mar = c(0.002, 0.002, 0.002, 0.002))
+
+# Create the pairs plot
+pairs(data[,1:36], main = "Pairs plot of 36 columns of data")
+
+# Create a pairs plot
+pairs(data, main = "Pairs Plot for Covid 2021 Data Set")
+```
+
+
+
+
+## Best subsets
+```{r}
+## Dividing the large dataset
+half1 <- reduced[, -(19:36)]
+half2 <- reduced[, -(2:18)]
+
+# Load the "leaps" package
+library(leaps)
+
+# Perform best subsets regression on dataset 1
+best_subsets1 <- regsubsets(CFR ~ ., data = half1, nvmax = ncol(half1)-1, method = "exhaustive")
+summary(best_subsets1, rsq = TRUE)
+
+# Perform best subsets regression on dataset 2
+best_subsets2 <- regsubsets(CFR ~ ., data = half2, nvmax = ncol(half2)-1, method = "exhaustive")
+summary(best_subsets2, rsq = TRUE)
+```
+## Best Subsets - 1st half plot
+
+```{r}
+# Set plot size and margins
+
+
+# Plot the best subsets
+plot(best_subsets1, scale="r2", las=2)
+
+# Add a title and adjust the outer margin
+mtext("1st half", outer=TRUE, line=0.5, cex=1.2)
+
+"pop_over_65"
+"under18"
+"commute"
+"health_insur_coverage"
+"household_income"
+"male"
+"income_below_poverty"
+"total_staffed_adult_icu_beds_7_day_avg"
+
+# Set plot size and margins
+
+
+```
+## Best Subsets - 2nd half plot
+
+```{r}
+# Set plot size and margins
+
+
+# Plot the best subsets
+plot(best_subsets2, scale="r2", las=2)
+
+# Add a title and adjust the outer margin
+mtext("2nd half", outer=TRUE, line=0.5, cex=1.2)
+"staffed_icu_adult_patients_confirmed_covid_7_day_avg"
+"binge"
+"casthma"
+"chd"
+"csmoking"
+"diabetes"
+"lpa"
+"obesity"
+"Administered_Dose1_Pop_Pct"
+```
+## Best Subsets - final
+
+```{r}
+finalhalf <- dplyr::select(reduced, CFR, staffed_icu_adult_patients_confirmed_covid_7_day_avg, binge, casthma, chd, csmoking, diabetes, lpa, obesity, Administered_Dose1_Pop_Pct, pop_over_65, under18, commute, health_insur_coverage, household_income, male, income_below_poverty, total_staffed_adult_icu_beds_7_day_avg)
+    
+best_subsets3 <- regsubsets(CFR ~ ., data = finalhalf, nvmax = ncol(half1)-1, method = "exhaustive")
+summary(best_subsets1, rsq = TRUE)
+
+# Set plot size and margins
+par(fig=c(0, 1, 0, 1), mar=c(5, 4, 8, 2) + 0.1, oma=c(0, 0, 2, 0), cex.axis=0.8, cex.lab=0.8)
+par(fig=c(0, 1, 0.25, 1), new=TRUE)
+
+# Plot the best subsets
+plot(best_subsets3, scale="r2", las=2)
+
+# Add a title and adjust the outer margin
+mtext("Final Best Subsets", outer=TRUE, line=0.5, cex=1.2)
+```
+
+## Final Subset Model
+```{r}
+finalhalf <- dplyr::select(reduced, CFR, staffed_icu_adult_patients_confirmed_covid_7_day_avg, binge, casthma, chd, csmoking, diabetes, lpa, obesity, Administered_Dose1_Pop_Pct, pop_over_65, under18, commute, health_insur_coverage, household_income, male, income_below_poverty, total_staffed_adult_icu_beds_7_day_avg)
+    
+#best_subsets3 <- regsubsets(CFR ~ ., data = finalhalf, nvmax = ncol(half1)-1, method = "exhaustive")
+#summary(best_subsets1, rsq = TRUE)
+#plot(best_subsets3, scale="adjr2")
+
+regfin <- dplyr::select(reduced, CFR, staffed_icu_adult_patients_confirmed_covid_7_day_avg, binge, chd, csmoking, diabetes, lpa, pop_over_65, under18, commute, health_insur_coverage, male)
+
+reg1 <- lm(CFR ~., data = regfin)
+summary(reg1)
+```
+
+#resid plots
+```{r}
+dev.new(width=12, height=16)
+par(mfrow=c(5, 4), mar=c(2, 2, 2, 2))
+for(i in 2:length(names(reg1$model))) {
+  plot(reg1$model[,i], resid(reg1), main=paste("Residuals vs.", names(reg1$model)[i]), ylab="Residuals")
+    # Add a horizontal line at y=0
+  abline(h = 0, col = "red")
+}
+```
+## npp
+```{r}
+dev.new(width=12, height=16)
+par(mfrow=c(5, 4), mar=c(2, 2, 2, 2))
+for(i in 2:length(names(reg1$model))) {
+  qqnorm(reg1$model[,i], main=paste("Normal Probability Plot of", names(reg1$model)[i]))
+  qqline(reg1$model[,i])
+}
+```
+# DOING LOG TRANSFORMATION ON VARIABLES WITH FUNNELL SHAPED RESID PLOTS
+```{r}
+# Load the necessary libraries
+library(dplyr)
+
+# Remove NAs and zeroes from commute and staffed_icu_adult_patients_confirmed_covid_7_day_avg
+regfin2 <- regfin %>%
+  filter(commute > 0 & !is.na(commute)) %>%
+  filter(staffed_icu_adult_patients_confirmed_covid_7_day_avg > 0 & !is.na(staffed_icu_adult_patients_confirmed_covid_7_day_avg)) %>%
+  filter(health_insur_coverage > 0 & !is.na(health_insur_coverage)) %>%
+  filter(male > 0 & !is.na(male)) %>%
+  filter(pop_over_65 > 0 & !is.na(pop_over_65))
+
+# Take the log of commute and staffed_icu_adult_patients_confirmed_covid_7_day_avg
+regfin2$log_commute <- log(regfin2$commute)
+regfin2$log_staffed_icu <- log(regfin2$staffed_icu_adult_patients_confirmed_covid_7_day_avg)
+regfin2$log_pop_over_65 <- log(regfin2$pop_over_65)
+
+
+
+# Create the new linear regression model with the logged variables
+reg2 <- lm(CFR ~ binge + chd + csmoking + diabetes + lpa + male + log_pop_over_65 + under18 + health_insur_coverage + log_commute + log_staffed_icu, data = regfin2)
+
+# Print the summary of the new regression model
+summary(reg2)
+
+
+
+
+# Full Model
+
+regfin3 <- dplyr::select(data, CFR, staffed_icu_adult_patients_confirmed_covid_7_day_avg, binge, chd, csmoking, diabetes, lpa, pop_over_65, under18, commute, health_insur_coverage, male, white)
+
+regfin3 <- regfin3 %>%
+  filter(commute > 0 & !is.na(commute)) %>%
+  filter(staffed_icu_adult_patients_confirmed_covid_7_day_avg > 0 & !is.na(staffed_icu_adult_patients_confirmed_covid_7_day_avg)) %>%
+  filter(health_insur_coverage > 0 & !is.na(health_insur_coverage)) %>%
+  filter(male > 0 & !is.na(male)) %>%
+  filter(pop_over_65 > 0 & !is.na(pop_over_65))
+
+regfin3$log_commute <- log(regfin3$commute)
+regfin3$log_staffed_icu <- log(regfin3$staffed_icu_adult_patients_confirmed_covid_7_day_avg)
+regfin3$log_pop_over_65 <- log(regfin3$pop_over_65)
+
+reg3 <- lm(CFR ~ white + binge + chd + csmoking + diabetes + lpa + male + log_pop_over_65 + under18 + health_insur_coverage + log_commute + log_staffed_icu, data = regfin3)
+
+summary(reg3)
+
+
+# Extra Sum of Squares Test
+
+
+# Calculate the extra sum of squares
+anova(reg2, reg3)
+```
+# RESID AFTER LOG
+```{r}
+dev.new(width=12, height=16)
+par(mfrow=c(5, 4), mar=c(2, 2, 2, 2))
+for(i in 2:length(names(reg2$model))) {
+  plot(reg2$model[,i], resid(reg2), main=paste("Residuals vs.", names(reg2$model)[i]), ylab="Residuals")
+    # Add a horizontal line at y=0
+  abline(h = 0, col = "red")
+}
+```
+#Npp PLOTS AFTER
+```{r}
+dev.new(width=12, height=16)
+par(mfrow=c(5, 4), mar=c(2, 2, 2, 2))
+for(i in 2:length(names(reg2$model))) {
+  qqnorm(reg2$model[,i], main=paste("Normal Probability Plot of", names(reg2$model)[i]))
+  qqline(reg2$model[,i])
+}
+
+```
+
+## VIF
+```{r}
+# Load the car and ggplot2 packages
+library(car)
+library(ggplot2)
+
+# Fit a linear regression model using all predictor variables in the data frame
+model <- lm(CFR ~ ., data = regfin)
+summary(model)
+
+# Calculate the VIF for each predictor variable
+vif_values <- vif(model)
+
+# Create a data frame with the predictor variable names and VIF values
+df_vif <- data.frame(predictor = names(vif_values), vif = vif_values)
+
+# Create a bar plot of the VIF values
+ggplot(data = df_vif, 
+       mapping = aes(x = predictor, 
+                     y = vif)) +
+  geom_col() +
+  geom_hline(yintercept = 5, lty = 2, lwd = 2) +
+  scale_x_discrete(guide = guide_axis(check.overlap = TRUE, 
+                                      n.dodge = 3)) +
+  ylab("Variance inflation factor (VIF)") +
+  theme(axis.text = element_text(size = rel(1.7)), 
+        axis.title = element_text(size = rel(2)), 
+        axis.title.x = element_text(margin = margin(t = 10)), 
+        axis.title.y = element_text(vjust = 1.5))
+
+regfin <- dplyr::select(reduced, CFR, staffed_icu_adult_patients_confirmed_covid_7_day_avg, binge, chd, csmoking, diabetes, lpa, pop_over_65, under18, commute, health_insur_coverage, male)
+
+lm_vif <- lm(CFR ~., data = vif_clean)
+summary(lm_vif)
+
+reg_vif <- lm(CFR ~., data = vif_clean)
+summary(reg_vif)
+
+```
+
