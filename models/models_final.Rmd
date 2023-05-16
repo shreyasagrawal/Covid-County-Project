@@ -26,7 +26,7 @@ library(MASS)
 library(openxlsx)
 
 # Data prep
-data <- read_csv("~/0511_merged.csv")
+data <- read_csv("0511_merged.csv")
 ```
 ## Data
 
@@ -57,16 +57,16 @@ corrplot(mycorr, type = "upper", order = "hclust", tl.col = "black", tl.cex = 0.
 ## Pairs Plot
 
 ```{r}
-ncol(data)
+#ncol(data)
 
 # Set the plot margins to a smaller value
-par(mar = c(0.002, 0.002, 0.002, 0.002))
+#par(mar = c(0.002, 0.002, 0.002, 0.002))
 
 # Create the pairs plot
-pairs(data[,1:36], main = "Pairs plot of 36 columns of data")
+#pairs(data[,1:36], main = "Pairs plot of 36 columns of data")
 
 # Create a pairs plot
-pairs(data, main = "Pairs Plot for Covid 2021 Data Set")
+#pairs(data, main = "Pairs Plot for Covid 2021 Data Set")
 ```
 
 
@@ -187,6 +187,7 @@ for(i in 2:length(names(reg1$model))) {
   qqline(reg1$model[,i])
 }
 ```
+
 # DOING LOG TRANSFORMATION ON VARIABLES WITH FUNNELL SHAPED RESID PLOTS
 ```{r}
 # Load the necessary libraries
@@ -204,17 +205,17 @@ regfin2 <- regfin %>%
 regfin2$log_commute <- log(regfin2$commute)
 regfin2$log_staffed_icu <- log(regfin2$staffed_icu_adult_patients_confirmed_covid_7_day_avg)
 regfin2$log_pop_over_65 <- log(regfin2$pop_over_65)
-
-
+regfin2$log_male <- log(regfin2$male)
+regfin2$log_health_insur_coverage <- log(regfin2$health_insur_coverage)
 
 # Create the new linear regression model with the logged variables
-reg2 <- lm(CFR ~ binge + chd + csmoking + diabetes + lpa + male + log_pop_over_65 + under18 + health_insur_coverage + log_commute + log_staffed_icu, data = regfin2)
+reg2 <- lm(CFR ~ binge + csmoking + diabetes + lpa + log_male + log_pop_over_65 + under18 + log_health_insur_coverage + log_commute + log_staffed_icu + csmoking*log_commute + diabetes*under18 + lpa*log_pop_over_65 + under18*log_commute + log_health_insur_coverage*log_commute + csmoking*binge + binge*diabetes, data = regfin2)
 
 # Print the summary of the new regression model
 summary(reg2)
+```
 
-
-
+```{r}
 
 # Full Model
 
@@ -230,11 +231,12 @@ regfin3 <- regfin3 %>%
 regfin3$log_commute <- log(regfin3$commute)
 regfin3$log_staffed_icu <- log(regfin3$staffed_icu_adult_patients_confirmed_covid_7_day_avg)
 regfin3$log_pop_over_65 <- log(regfin3$pop_over_65)
+regfin3$log_male <- log(regfin3$male)
+regfin3$log_health_insur_coverage <- log(regfin3$health_insur_coverage)
 
-reg3 <- lm(CFR ~ white + binge + chd + csmoking + diabetes + lpa + male + log_pop_over_65 + under18 + health_insur_coverage + log_commute + log_staffed_icu, data = regfin3)
+reg3 <- lm(CFR ~ white + binge + csmoking + diabetes + lpa + log_male + log_pop_over_65 + under18 + log_health_insur_coverage + log_commute + log_staffed_icu + csmoking*log_commute + diabetes*under18 + lpa*log_pop_over_65 + under18*log_commute + log_health_insur_coverage*log_commute + csmoking*binge + binge*diabetes, data = regfin3)
 
 summary(reg3)
-
 
 # Extra Sum of Squares Test
 
@@ -242,6 +244,8 @@ summary(reg3)
 # Calculate the extra sum of squares
 anova(reg2, reg3)
 ```
+
+
 # RESID AFTER LOG
 ```{r}
 dev.new(width=12, height=16)
