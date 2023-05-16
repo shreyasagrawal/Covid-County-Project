@@ -1,0 +1,216 @@
+```{r, warning = FALSE, message = FALSE}
+require(tidyr)
+require(dplyr)
+require(stringr)
+require(tibble)
+require(readr)
+require(mosaic)
+require(ggplot2)
+require(reshape2)
+require(leaps)
+```
+
+```{r}
+hospital <- read.csv("~/Desktop/hospital_clean.csv")
+cases <- read.csv("https://www.dropbox.com/s/0ry23w60yu5w3s8/covid-cases-deaths-cleaned.csv?dl=1")
+places <- read.csv("https://www.dropbox.com/s/06fofnx87n4gwrn/places-project-chronic-diseases-cleaned.csv?dl=1")
+vaxx <- read.csv("~/Desktop/vaxx_clean.csv")
+econ <- read.csv("~/Desktop/econ_cleaned.csv")
+demo <- read.csv("https://www.dropbox.com/s/itmop9r5sxyxr5t/demographic-final.csv?dl=1")
+```
+
+## Hospital
+```{r}
+hospital_raw <- read_csv("https://www.dropbox.com/s/p7v89442vjzcb0n/covid-19_reported_patient_impact_and_hospital_capacity_by_facility.csv?dl=1")
+
+hospital_raw$collection_week <- as.Date(hospital_raw$collection_week)
+
+year <- strftime(hospital_raw$collection_week, 
+                        format = "%Y")
+hospital_raw <- add_column(hospital_raw, year, .after = 1)
+
+week <- strftime(hospital_raw$collection_week, format = "%V")
+hospital_raw <- add_column(hospital_raw, week, .after = 2)
+
+hospital_raw1 <- hospital_raw %>%
+  filter(year == 2021) %>%
+  filter(week != 53) %>%
+  filter(!is.na(fips_code)) %>%
+  rename("fips" = "fips_code") %>%
+  select(year, week, fips, 
+         all_adult_hospital_inpatient_beds_7_day_avg, # staffed inpatient adult beds
+         all_adult_hospital_inpatient_bed_occupied_7_day_avg, # staffed inpatient adult bed that are occupied
+         
+         total_adult_patients_hospitalized_confirmed_covid_7_day_avg, # COVID, hospitalized adults
+         
+         total_staffed_adult_icu_beds_7_day_avg, # staffed inpatient adult ICU beds
+         staffed_adult_icu_bed_occupancy_7_day_avg, # staffed inpatient adult ICU beds that are occupied
+         staffed_icu_adult_patients_confirmed_covid_7_day_avg) # staffed inpatient adult ICU beds occupied by COVID
+
+hospital_raw1[hospital_raw1 < 0] <- 0
+
+hospital_raw2 <- hospital_raw1 %>%
+  group_by(year, week, fips) %>% 
+  summarise(all_adult_hospital_inpatient_beds_7_day_avg = mean(all_adult_hospital_inpatient_beds_7_day_avg),
+            all_adult_hospital_inpatient_bed_occupied_7_day_avg = mean(all_adult_hospital_inpatient_bed_occupied_7_day_avg),
+            total_adult_patients_hospitalized_confirmed_covid_7_day_avg = mean(total_adult_patients_hospitalized_confirmed_covid_7_day_avg),
+            total_staffed_adult_icu_beds_7_day_avg = mean(total_staffed_adult_icu_beds_7_day_avg),
+            staffed_adult_icu_bed_occupancy_7_day_avg = mean(staffed_adult_icu_bed_occupancy_7_day_avg),
+            staffed_icu_adult_patients_confirmed_covid_7_day_avg = mean(staffed_icu_adult_patients_confirmed_covid_7_day_avg))
+
+# write.csv(hospital_raw2, 
+          # file = "~/Desktop/hospital_clean.csv", 
+          # row.names = FALSE)
+```
+
+## Vaxx
+```{r}
+vaxx_raw <- read.csv("https://www.dropbox.com/s/xdvfa3gfqis7u1z/COVID-19_Vaccinations_in_the_United_States_County.csv?dl=1")
+
+vaxx_raw <- vaxx_raw %>% rename(collection_week = Date)
+
+# Convert the "collection_week" column to a Date object
+vaxx_raw$collection_week <- as.Date(vaxx_raw$collection_week, format = "%m/%d/%Y")
+
+# Format the "collection_week" column to the desired format
+vaxx_raw$collection_week <- format(vaxx_raw$collection_week, "%Y-%m-%d")
+
+# Create year_number column
+year_number <- strftime(vaxx_raw$collection_week, 
+                        format = "%Y")
+vaxx_raw$year_number <- year_number
+
+# Create week_number column
+week_number <- strftime(vaxx_raw$collection_week, 
+                        format = "%V")
+vaxx_raw$week_number <- week_number
+
+# Keep these variables
+
+vaxx_raw <- vaxx_raw[, c("collection_week","FIPS","MMWR_week", "Recip_County", "Recip_State","Completeness_pct","Administered_Dose1_Pop_Pct","Series_Complete_Pop_Pct", "Booster_Doses_Vax_Pct", "Series_Complete_Pop_Pct_SVI", "Booster_Doses_Vax_Pct_SVI", "week_number", "year_number")]
+
+vaxx_raw <- vaxx_raw %>% filter(year_number != 2021)
+
+vaxx_raw <- vaxx_raw %>%
+  group_by(week_number, FIPS) %>%
+  summarise(Completeness_pct = mean(Completeness_pct),
+          Administered_Dose1_Pop_Pct = mean(Administered_Dose1_Pop_Pct),
+          Series_Complete_Pop_Pct = mean(Series_Complete_Pop_Pct),
+          Booster_Doses_Vax_Pct = mean(Booster_Doses_Vax_Pct),
+          Series_Complete_Pop_Pct_SVI = mean(Series_Complete_Pop_Pct_SVI))
+
+vaxx_raw <- vaxx_raw %>% filter(week_number != 53)
+
+# Change -999999.00 to N/A
+# -999999.00 represents the suppression to the file for sums and averages less 
+# than four, for which assuming it to be 0 will not be reasonable because we 
+# may not know the actual value -999999.00 represents
+vaxx_raw[vaxx_raw < 0] <- 0
+
+# write.csv(vaxx_raw, 
+          # file = "~/Desktop/vaxx_clean.csv", 
+          # row.names = FALSE)
+```
+
+## Econ
+```{r}
+econ.2021 <- read.csv("https://www.dropbox.com/s/q0iod9xnpjjdpcl/economic-characteristics-2021.csv?dl=1")
+
+### Add week
+econ.2021 <-  econ.2021 %>% slice(rep(1:n(),52)) %>% mutate(`Year` = 2021, Week = rep(1:52,each = 3222))
+
+### Choosing variables 
+econ.all <- econ.2021 %>% select('GEO_ID','NAME','DP03_0095E','DP03_0096E','DP03_0001E','DP03_0005E','DP03_0021E','DP03_0119PE','DP03_0095PE','DP03_0051PE','DP03_0042PE','Year','Week') 
+
+### Rename the columns, remove the first colummn
+colnames(econ.all) <- econ.all[1,]
+econ.all <- econ.all[-1,]
+names(econ.all)[names(econ.all) == 'Estimate!!EMPLOYMENT STATUS!!Population 16 years and over!!In labor force!!Civilian labor force!!Unemployed'] <- 'Estimate Unemployment'
+names(econ.all)[names(econ.all) == 'Percent!!PERCENTAGE OF FAMILIES AND PEOPLE WHOSE INCOME IN THE PAST 12 MONTHS IS BELOW THE POVERTY LEVEL!!All families'] <- 'Household Income Below Poverty Level Percentage'
+names(econ.all)[names(econ.all) == 'Estimate!!COMMUTING TO WORK!!Workers 16 years and over!!Public transportation (excluding taxicab)'] <- 'Public Transport Commutation'
+names(econ.all)[names(econ.all) == 'Estimate!!HEALTH INSURANCE COVERAGE!!Civilian noninstitutionalized population'] <- 'Total Civilian'
+names(econ.all)[names(econ.all) == 'Estimate!!HEALTH INSURANCE COVERAGE!!Civilian noninstitutionalized population!!With health insurance coverage'] <- 'Estimate Health Insurance'
+names(econ.all)[names(econ.all) == 'Percent!!INCOME AND BENEFITS (IN 2021 INFLATION-ADJUSTED DOLLARS)!!Total households'] <- 'Household Income and Benefits'
+names(econ.all)[names(econ.all) == 'Percent!!INDUSTRY!!Civilian employed population 16 years and over!!Educational services, and health care and social assistance'] <- 'Edu Health Social Industry Percentage'
+names(econ.all)[names(econ.all) == 'Estimate!!EMPLOYMENT STATUS!!Population 16 years and over'] <- 'Population 16 and Over'
+
+econ.all$`Total Civilian` <- as.numeric(econ.all$`Total Civilian`)
+econ.all$`Estimate Health Insurance` <- as.numeric(econ.all$`Estimate Health Insurance`)
+econ.all$`Population 16 and Over` <- as.numeric(econ.all$`Population 16 and Over`)
+econ.all$`Estimate Unemployment` <- as.numeric(econ.all$`Estimate Unemployment`)
+econ.all$`Public Transport Commutation` <- as.numeric(econ.all$`Public Transport Commutation`)
+econ.all$`Household Income Below Poverty Level Percentage` <- as.numeric(econ.all$`Household Income Below Poverty Level Percentage`)
+econ.all$`Edu Health Social Industry Percentage` <- as.numeric(econ.all$`Edu Health Social Industry Percentage`)
+econ.all <- econ.all %>% mutate(`Unemployment Rate` = `Estimate Unemployment`/`Population 16 and Over`,
+                                `Health Insurance Coverage Percentage` = `Estimate Health Insurance`/`Total Civilian`,
+                                `Public Transport Commutation` = `Public Transport Commutation`/`Population 16 and Over`)
+### Check null
+#length(which(is.na(econ.all)))
+
+### Add fips code 
+econ.all$Fips <- str_sub(econ.all$Geography,-5,-1)
+###
+econ.all$Year = econ.all$`2021`
+econ.all$Week = econ.all$`1`
+econ.all <- econ.all %>% select(!`2021`&!`1`)
+
+# write.csv(econ.all, 
+          # file = "~/Desktop/econ_cleaned.csv", 
+          # row.names = FALSE)
+```
+
+```{r}
+cases <- cases %>%
+  filter(year_number == 2021) %>%
+  filter(week_number != 53) %>%
+  rename("week" = "week_number",
+         "year" = "year_number") %>%
+  select(-year, -diff.cases, -diff.deaths)
+
+demo <- demo %>%
+  filter(year == 2021) %>%
+  select(-X, -X65., -year)
+
+econ <- econ %>%
+  filter(Fips != "raphy") %>%
+  mutate(Fips = str_remove(Fips, "^0"),
+         Fips = as.numeric(Fips)) %>%
+  rename("fips" = "Fips",
+         "week" = "Week") %>%
+  rename("name" = "Geographic.Area.Name",
+         "commute" = "Public.Transport.Commutation",
+         "income_below_poverty" = "Household.Income.Below.Poverty.Level.Percentage",
+         "health_insur_coverage" = "Health.Insurance.Coverage.Percentage",
+         "household_income" = "Household.Income.and.Benefits",
+         "edu_health_social_industry" = "Edu.Health.Social.Industry.Percentage",
+         "unemployment_rate" = "Unemployment.Rate") %>%
+  select(fips, week, commute, income_below_poverty, health_insur_coverage, household_income, edu_health_social_industry, unemployment_rate)
+
+places <- places %>%
+  filter(year == 2021) %>%
+  select(fips, week, binge, bphigh, cancer, casthma, chd, copd, csmoking, diabetes, highchol, lpa, obesity, sleep)
+
+vaxx <- vaxx %>%
+  filter(week_number != 53) %>%
+  filter(FIPS != "UNK") %>%
+  mutate(FIPS = str_remove(FIPS, "^0"),
+         FIPS = as.numeric(FIPS)) %>%
+  rename("fips" = "FIPS",
+         "week" = "week_number")
+```
+
+```{r}
+merge <- inner_join(cases, demo, by = c("fips", "week"))
+merge <- inner_join(merge, econ, by = c("fips", "week"))
+merge <- inner_join(merge, hospital, by = c("fips", "week"))
+merge <- inner_join(merge, places, by = c("fips", "week"))
+merge <- inner_join(merge, vaxx, by = c("fips", "week"))
+
+merge_1 <- merge %>%
+  distinct(fips) # 2416 counties, 2416*52 - 151 = 125481 rows
+
+# write.csv(merge, 
+          # file = "~/Desktop/0511_merged.csv", 
+          # row.names = FALSE)
+```
+
