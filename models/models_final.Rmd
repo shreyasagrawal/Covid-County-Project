@@ -291,11 +291,8 @@ ggplot(data = df_vif,
 
 regfin <- dplyr::select(reduced, CFR, staffed_icu_adult_patients_confirmed_covid_7_day_avg, binge, chd, csmoking, diabetes, lpa, pop_over_65, under18, commute, health_insur_coverage, male)
 
-lm_vif <- lm(CFR ~., data = vif_clean)
+lm_vif <- lm(CFR ~., data = regfin)
 summary(lm_vif)
-
-reg_vif <- lm(CFR ~., data = vif_clean)
-summary(reg_vif)
 
 ```
 
