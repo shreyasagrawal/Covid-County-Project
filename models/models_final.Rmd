@@ -26,7 +26,11 @@ library(MASS)
 library(openxlsx)
 
 # Data prep
+<<<<<<< Updated upstream
 data <- read_csv("0511_merged.csv")
+=======
+data <- read_csv("https://www.dropbox.com/s/72datd3ntg7ey2z/final_merged_data.csv?dl=1")
+>>>>>>> Stashed changes
 ```
 ## Data
 
@@ -54,6 +58,27 @@ corrplot(mycorr, type = "upper", order = "hclust", tl.col = "black", tl.cex = 0.
 
 ```
 
+<<<<<<< Updated upstream
+=======
+## Pairs Plot
+
+```{r}
+#ncol(data)
+
+# Set the plot margins to a smaller value
+#par(mar = c(0.002, 0.002, 0.002, 0.002))
+
+# Create the pairs plot
+#pairs(data[,1:36], main = "Pairs plot of 36 columns of data")
+
+# Create a pairs plot
+#pairs(data, main = "Pairs Plot for Covid 2021 Data Set")
+```
+
+
+
+
+>>>>>>> Stashed changes
 ## Best subsets
 ```{r}
 ## Dividing the large dataset
@@ -74,6 +99,7 @@ summary(best_subsets2, rsq = TRUE)
 ## Best Subsets - 1st half plot
 
 ```{r}
+<<<<<<< Updated upstream
 par(fig=c(0, 1, 0, 1), mar=c(9, 4, 6, 9) + 0.1, oma=c(0, 0, 2, 0), cex.axis=1.18, cex.lab=0.8)
 par(fig=c(0, 1, 0.35, 1), new=TRUE)
 
@@ -85,6 +111,16 @@ plot(best_subsets1, scale="r2", xaxt="n", labels = FALSE)
 
 # Add custom x-axis labels
 axis(1, at=1:length(modified_names), labels=modified_names, las=2)
+=======
+# Set plot size and margins
+
+
+# Plot the best subsets
+plot(best_subsets1, scale="r2", las=2)
+
+# Add a title and adjust the outer margin
+mtext("1st half", outer=TRUE, line=0.5, cex=1.2)
+>>>>>>> Stashed changes
 
 "pop_over_65"
 "under18"
@@ -99,6 +135,7 @@ axis(1, at=1:length(modified_names), labels=modified_names, las=2)
 
 
 ```
+<<<<<<< Updated upstream
 
 ## Best Subsets - 2nd half plot
 
@@ -115,6 +152,19 @@ plot(best_subsets2, scale="r2", xaxt="n", labels = FALSE)
 # Add custom x-axis labels
 axis(1, at=1:length(modified_names), labels=modified_names, las=2)
 
+=======
+## Best Subsets - 2nd half plot
+
+```{r}
+# Set plot size and margins
+
+
+# Plot the best subsets
+plot(best_subsets2, scale="r2", las=2)
+
+# Add a title and adjust the outer margin
+mtext("2nd half", outer=TRUE, line=0.5, cex=1.2)
+>>>>>>> Stashed changes
 "staffed_icu_adult_patients_confirmed_covid_7_day_avg"
 "binge"
 "casthma"
@@ -133,6 +183,7 @@ finalhalf <- dplyr::select(reduced, CFR, staffed_icu_adult_patients_confirmed_co
 best_subsets3 <- regsubsets(CFR ~ ., data = finalhalf, nvmax = ncol(half1)-1, method = "exhaustive")
 summary(best_subsets1, rsq = TRUE)
 
+<<<<<<< Updated upstream
 par(fig=c(0, 1, 0, 1), mar=c(9, 4, 6, 9) + 0.1, oma=c(0, 0, 2, 0), cex.axis=1.18, cex.lab=0.8)
 par(fig=c(0, 1, 0.35, 1), new=TRUE)
 
@@ -144,6 +195,17 @@ plot(best_subsets3, scale="r2", xaxt="n", labels = FALSE)
 
 # Add custom x-axis labels
 axis(1, at=1:length(modified_names), labels=modified_names, las=2)
+=======
+# Set plot size and margins
+par(fig=c(0, 1, 0, 1), mar=c(5, 4, 8, 2) + 0.1, oma=c(0, 0, 2, 0), cex.axis=0.8, cex.lab=0.8)
+par(fig=c(0, 1, 0.25, 1), new=TRUE)
+
+# Plot the best subsets
+plot(best_subsets3, scale="r2", las=2)
+
+# Add a title and adjust the outer margin
+mtext("Final Best Subsets", outer=TRUE, line=0.5, cex=1.2)
+>>>>>>> Stashed changes
 ```
 
 ## Final Subset Model
@@ -201,7 +263,11 @@ regfin2$log_male <- log(regfin2$male)
 regfin2$log_health_insur_coverage <- log(regfin2$health_insur_coverage)
 
 # Create the new linear regression model with the logged variables
+<<<<<<< Updated upstream
 reg2 <- lm(CFR ~ binge + csmoking + diabetes + lpa + log_male + log_pop_over_65 + under18 + log_health_insur_coverage + log_commute + log_staffed_icu + csmoking*log_commute + diabetes*under18 + lpa*log_pop_over_65 + under18*log_commute + log_health_insur_coverage*log_commute + csmoking*binge + binge*diabetes, data = regfin2)
+=======
+reg2 <- lm(CFR ~ binge + chd + csmoking + diabetes + lpa + log_male + log_pop_over_65 + under18 + log_health_insur_coverage + log_commute + log_staffed_icu + csmoking*log_commute + diabetes*under18 + lpa*log_pop_over_65 + under18*log_commute + log_health_insur_coverage*log_commute + csmoking*binge + binge*diabetes + chd*diabetes + chd*lpa, data = regfin2)
+>>>>>>> Stashed changes
 
 # Print the summary of the new regression model
 summary(reg2)
@@ -211,7 +277,11 @@ summary(reg2)
 
 # Full Model
 
+<<<<<<< Updated upstream
 regfin3 <- dplyr::select(data, CFR, staffed_icu_adult_patients_confirmed_covid_7_day_avg, binge, chd, csmoking, diabetes, lpa, pop_over_65, under18, commute, health_insur_coverage, male, white)
+=======
+regfin3 <- dplyr::select(data, CFR, staffed_icu_adult_patients_confirmed_covid_7_day_avg, binge, chd, csmoking, diabetes, lpa, pop_over_65, under18, commute, health_insur_coverage, male, white, black, hispanic, native, asian)
+>>>>>>> Stashed changes
 
 regfin3 <- regfin3 %>%
   filter(commute > 0 & !is.na(commute)) %>%
@@ -226,12 +296,28 @@ regfin3$log_pop_over_65 <- log(regfin3$pop_over_65)
 regfin3$log_male <- log(regfin3$male)
 regfin3$log_health_insur_coverage <- log(regfin3$health_insur_coverage)
 
+<<<<<<< Updated upstream
 reg3 <- lm(CFR ~ white + binge + csmoking + diabetes + lpa + log_male + log_pop_over_65 + under18 + log_health_insur_coverage + log_commute + log_staffed_icu + csmoking*log_commute + diabetes*under18 + lpa*log_pop_over_65 + under18*log_commute + log_health_insur_coverage*log_commute + csmoking*binge + binge*diabetes, data = regfin3)
 
 summary(reg3)
 
 # Extra Sum of Squares Test
 
+=======
+reg3 <- lm(CFR ~ white + black + hispanic + native + asian + binge + chd + csmoking + diabetes + lpa + log_male + log_pop_over_65 + under18 + log_health_insur_coverage + log_commute + log_staffed_icu + csmoking*log_commute + diabetes*under18 + lpa*log_pop_over_65 + under18*log_commute + log_health_insur_coverage*log_commute + csmoking*binge + binge*diabetes + chd*diabetes + chd*lpa, data = regfin3)
+
+summary(reg3)
+regre3 <- summary(reg3)
+cc <- regre3$coefficients
+term <- regre3$aliased
+
+library(MASS)
+eqn <- paste("Y =", paste(round(cc[1],2), paste(round(cc[-1],2), names(term[-1]), sep=" * ", collapse=" + "), sep=" + "), "+ e")
+eqn
+
+# Extra Sum of Squares Test
+# black + hispanic + native + asian + white*chd + white*csmoking + b + 
+>>>>>>> Stashed changes
 
 # Calculate the extra sum of squares
 anova(reg2, reg3)
@@ -266,6 +352,12 @@ library(car)
 library(ggplot2)
 
 # Fit a linear regression model using all predictor variables in the data frame
+<<<<<<< Updated upstream
+=======
+regfin <- regfin %>% 
+  rename(staffed_icu_covid = 
+           staffed_icu_adult_patients_confirmed_covid_7_day_avg)
+>>>>>>> Stashed changes
 model <- lm(CFR ~ ., data = regfin)
 summary(model)
 
@@ -276,10 +368,15 @@ vif_values <- vif(model)
 df_vif <- data.frame(predictor = names(vif_values), vif = vif_values)
 
 # Create a bar plot of the VIF values
+<<<<<<< Updated upstream
+=======
+tiff("/Users/cameronlian/Downloads/Rplot.tiff", units="in", width=5, height=2, res=300)
+>>>>>>> Stashed changes
 ggplot(data = df_vif, 
        mapping = aes(x = predictor, 
                      y = vif)) +
   geom_col() +
+<<<<<<< Updated upstream
   geom_hline(yintercept = 5, lty = 2, lwd = 2) +
   scale_x_discrete(guide = guide_axis(check.overlap = TRUE, 
                                       n.dodge = 3)) +
@@ -288,6 +385,19 @@ ggplot(data = df_vif,
         axis.title = element_text(size = rel(2)), 
         axis.title.x = element_text(margin = margin(t = 10)), 
         axis.title.y = element_text(vjust = 1.5))
+=======
+  geom_hline(yintercept = 5, lty = 2, lwd = 0.8) +
+  scale_x_discrete(guide = guide_axis(check.overlap = TRUE, 
+                                      n.dodge = 3)) +
+  ylab("Variance inflation factor (VIF)") +
+  theme_classic() +
+  theme(axis.text = element_text(size = rel(1)), 
+        axis.title = element_text(size = rel(1)), 
+        axis.title.x = element_text(size = rel(0.6)), 
+        axis.text.x = element_text(size = rel(0.7)), 
+        axis.title.y = element_text(size = rel(0.6)))
+dev.off()
+>>>>>>> Stashed changes
 
 regfin <- dplyr::select(reduced, CFR, staffed_icu_adult_patients_confirmed_covid_7_day_avg, binge, chd, csmoking, diabetes, lpa, pop_over_65, under18, commute, health_insur_coverage, male)
 
