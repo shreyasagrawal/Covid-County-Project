@@ -26,7 +26,7 @@ library(MASS)
 library(openxlsx)
 
 # Data prep
-data <- read_csv("https://www.dropbox.com/s/72datd3ntg7ey2z/final_merged_data.csv?dl=1")
+data <- read_csv("0511_merged.csv")
 ```
 ## Data
 
@@ -54,24 +54,6 @@ corrplot(mycorr, type = "upper", order = "hclust", tl.col = "black", tl.cex = 0.
 
 ```
 
-## Pairs Plot
-
-```{r}
-#ncol(data)
-
-# Set the plot margins to a smaller value
-#par(mar = c(0.002, 0.002, 0.002, 0.002))
-
-# Create the pairs plot
-#pairs(data[,1:36], main = "Pairs plot of 36 columns of data")
-
-# Create a pairs plot
-#pairs(data, main = "Pairs Plot for Covid 2021 Data Set")
-```
-
-
-
-
 ## Best subsets
 ```{r}
 ## Dividing the large dataset
@@ -92,14 +74,17 @@ summary(best_subsets2, rsq = TRUE)
 ## Best Subsets - 1st half plot
 
 ```{r}
-# Set plot size and margins
+par(fig=c(0, 1, 0, 1), mar=c(9, 4, 6, 9) + 0.1, oma=c(0, 0, 2, 0), cex.axis=1.18, cex.lab=0.8)
+par(fig=c(0, 1, 0.35, 1), new=TRUE)
 
+# Modify variable names
+modified_names <- gsub("_7_day_avg", "", best_subsets1$xnames)
 
-# Plot the best subsets
-plot(best_subsets1, scale="r2", las=2)
+# Plot the best subsets without default x-axis labels
+plot(best_subsets1, scale="r2", xaxt="n", labels = FALSE)
 
-# Add a title and adjust the outer margin
-mtext("1st half", outer=TRUE, line=0.5, cex=1.2)
+# Add custom x-axis labels
+axis(1, at=1:length(modified_names), labels=modified_names, las=2)
 
 "pop_over_65"
 "under18"
@@ -114,17 +99,22 @@ mtext("1st half", outer=TRUE, line=0.5, cex=1.2)
 
 
 ```
+
 ## Best Subsets - 2nd half plot
 
 ```{r}
-# Set plot size and margins
+par(fig=c(0, 1, 0, 1), mar=c(9, 4, 6, 9) + 0.1, oma=c(0, 0, 2, 0), cex.axis=1.18, cex.lab=0.8)
+par(fig=c(0, 1, 0.35, 1), new=TRUE)
 
+# Modify variable names
+modified_names <- gsub("_7_day_avg", "", best_subsets2$xnames)
 
-# Plot the best subsets
-plot(best_subsets2, scale="r2", las=2)
+# Plot the best subsets without default x-axis labels
+plot(best_subsets2, scale="r2", xaxt="n", labels = FALSE)
 
-# Add a title and adjust the outer margin
-mtext("2nd half", outer=TRUE, line=0.5, cex=1.2)
+# Add custom x-axis labels
+axis(1, at=1:length(modified_names), labels=modified_names, las=2)
+
 "staffed_icu_adult_patients_confirmed_covid_7_day_avg"
 "binge"
 "casthma"
@@ -143,15 +133,17 @@ finalhalf <- dplyr::select(reduced, CFR, staffed_icu_adult_patients_confirmed_co
 best_subsets3 <- regsubsets(CFR ~ ., data = finalhalf, nvmax = ncol(half1)-1, method = "exhaustive")
 summary(best_subsets1, rsq = TRUE)
 
-# Set plot size and margins
-par(fig=c(0, 1, 0, 1), mar=c(5, 4, 8, 2) + 0.1, oma=c(0, 0, 2, 0), cex.axis=0.8, cex.lab=0.8)
-par(fig=c(0, 1, 0.25, 1), new=TRUE)
+par(fig=c(0, 1, 0, 1), mar=c(9, 4, 6, 9) + 0.1, oma=c(0, 0, 2, 0), cex.axis=1.18, cex.lab=0.8)
+par(fig=c(0, 1, 0.35, 1), new=TRUE)
 
-# Plot the best subsets
-plot(best_subsets3, scale="r2", las=2)
+# Modify variable names
+modified_names <- gsub("_7_day_avg", "", best_subsets3$xnames)
 
-# Add a title and adjust the outer margin
-mtext("Final Best Subsets", outer=TRUE, line=0.5, cex=1.2)
+# Plot the best subsets without default x-axis labels
+plot(best_subsets3, scale="r2", xaxt="n", labels = FALSE)
+
+# Add custom x-axis labels
+axis(1, at=1:length(modified_names), labels=modified_names, las=2)
 ```
 
 ## Final Subset Model
@@ -209,7 +201,7 @@ regfin2$log_male <- log(regfin2$male)
 regfin2$log_health_insur_coverage <- log(regfin2$health_insur_coverage)
 
 # Create the new linear regression model with the logged variables
-reg2 <- lm(CFR ~ binge + chd + csmoking + diabetes + lpa + log_male + log_pop_over_65 + under18 + log_health_insur_coverage + log_commute + log_staffed_icu + csmoking*log_commute + diabetes*under18 + lpa*log_pop_over_65 + under18*log_commute + log_health_insur_coverage*log_commute + csmoking*binge + binge*diabetes + chd*diabetes + chd*lpa, data = regfin2)
+reg2 <- lm(CFR ~ binge + csmoking + diabetes + lpa + log_male + log_pop_over_65 + under18 + log_health_insur_coverage + log_commute + log_staffed_icu + csmoking*log_commute + diabetes*under18 + lpa*log_pop_over_65 + under18*log_commute + log_health_insur_coverage*log_commute + csmoking*binge + binge*diabetes, data = regfin2)
 
 # Print the summary of the new regression model
 summary(reg2)
@@ -219,7 +211,7 @@ summary(reg2)
 
 # Full Model
 
-regfin3 <- dplyr::select(data, CFR, staffed_icu_adult_patients_confirmed_covid_7_day_avg, binge, chd, csmoking, diabetes, lpa, pop_over_65, under18, commute, health_insur_coverage, male, white, black, hispanic, native, asian)
+regfin3 <- dplyr::select(data, CFR, staffed_icu_adult_patients_confirmed_covid_7_day_avg, binge, chd, csmoking, diabetes, lpa, pop_over_65, under18, commute, health_insur_coverage, male, white)
 
 regfin3 <- regfin3 %>%
   filter(commute > 0 & !is.na(commute)) %>%
@@ -234,12 +226,12 @@ regfin3$log_pop_over_65 <- log(regfin3$pop_over_65)
 regfin3$log_male <- log(regfin3$male)
 regfin3$log_health_insur_coverage <- log(regfin3$health_insur_coverage)
 
-reg3 <- lm(CFR ~ white + black + hispanic + native + asian + binge + chd + csmoking + diabetes + lpa + log_male + log_pop_over_65 + under18 + log_health_insur_coverage + log_commute + log_staffed_icu + csmoking*log_commute + diabetes*under18 + lpa*log_pop_over_65 + under18*log_commute + log_health_insur_coverage*log_commute + csmoking*binge + binge*diabetes + chd*diabetes + chd*lpa, data = regfin3)
+reg3 <- lm(CFR ~ white + binge + csmoking + diabetes + lpa + log_male + log_pop_over_65 + under18 + log_health_insur_coverage + log_commute + log_staffed_icu + csmoking*log_commute + diabetes*under18 + lpa*log_pop_over_65 + under18*log_commute + log_health_insur_coverage*log_commute + csmoking*binge + binge*diabetes, data = regfin3)
 
 summary(reg3)
 
 # Extra Sum of Squares Test
-# black + hispanic + native + asian + white*chd + white*csmoking + b + 
+
 
 # Calculate the extra sum of squares
 anova(reg2, reg3)
