@@ -26,7 +26,7 @@ library(MASS)
 library(openxlsx)
 
 # Data prep
-data <- read_csv("0511_merged.csv")
+data <- read_csv("https://www.dropbox.com/s/72datd3ntg7ey2z/final_merged_data.csv?dl=1")
 ```
 ## Data
 
@@ -209,7 +209,7 @@ regfin2$log_male <- log(regfin2$male)
 regfin2$log_health_insur_coverage <- log(regfin2$health_insur_coverage)
 
 # Create the new linear regression model with the logged variables
-reg2 <- lm(CFR ~ binge + csmoking + diabetes + lpa + log_male + log_pop_over_65 + under18 + log_health_insur_coverage + log_commute + log_staffed_icu + csmoking*log_commute + diabetes*under18 + lpa*log_pop_over_65 + under18*log_commute + log_health_insur_coverage*log_commute + csmoking*binge + binge*diabetes, data = regfin2)
+reg2 <- lm(CFR ~ binge + chd + csmoking + diabetes + lpa + log_male + log_pop_over_65 + under18 + log_health_insur_coverage + log_commute + log_staffed_icu + csmoking*log_commute + diabetes*under18 + lpa*log_pop_over_65 + under18*log_commute + log_health_insur_coverage*log_commute + csmoking*binge + binge*diabetes + chd*diabetes + chd*lpa, data = regfin2)
 
 # Print the summary of the new regression model
 summary(reg2)
@@ -219,7 +219,7 @@ summary(reg2)
 
 # Full Model
 
-regfin3 <- dplyr::select(data, CFR, staffed_icu_adult_patients_confirmed_covid_7_day_avg, binge, chd, csmoking, diabetes, lpa, pop_over_65, under18, commute, health_insur_coverage, male, white)
+regfin3 <- dplyr::select(data, CFR, staffed_icu_adult_patients_confirmed_covid_7_day_avg, binge, chd, csmoking, diabetes, lpa, pop_over_65, under18, commute, health_insur_coverage, male, white, black, hispanic, native, asian)
 
 regfin3 <- regfin3 %>%
   filter(commute > 0 & !is.na(commute)) %>%
@@ -234,12 +234,12 @@ regfin3$log_pop_over_65 <- log(regfin3$pop_over_65)
 regfin3$log_male <- log(regfin3$male)
 regfin3$log_health_insur_coverage <- log(regfin3$health_insur_coverage)
 
-reg3 <- lm(CFR ~ white + binge + csmoking + diabetes + lpa + log_male + log_pop_over_65 + under18 + log_health_insur_coverage + log_commute + log_staffed_icu + csmoking*log_commute + diabetes*under18 + lpa*log_pop_over_65 + under18*log_commute + log_health_insur_coverage*log_commute + csmoking*binge + binge*diabetes, data = regfin3)
+reg3 <- lm(CFR ~ white + black + hispanic + native + asian + binge + chd + csmoking + diabetes + lpa + log_male + log_pop_over_65 + under18 + log_health_insur_coverage + log_commute + log_staffed_icu + csmoking*log_commute + diabetes*under18 + lpa*log_pop_over_65 + under18*log_commute + log_health_insur_coverage*log_commute + csmoking*binge + binge*diabetes + chd*diabetes + chd*lpa, data = regfin3)
 
 summary(reg3)
 
 # Extra Sum of Squares Test
-
+# black + hispanic + native + asian + white*chd + white*csmoking + b + 
 
 # Calculate the extra sum of squares
 anova(reg2, reg3)
